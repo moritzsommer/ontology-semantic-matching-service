@@ -1,0 +1,9 @@
+package additional;
+
+public enum InferenceTypes {
+    SUBCLASS,
+    CLASSASSERTION,
+    EQUIVALENTCLASS,
+    EQUIVALENTDATAPROPERTY,
+    EQUIVALENTOBJECTPROPERTY
+}

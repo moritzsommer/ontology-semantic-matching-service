@@ -1,0 +1,5 @@
+.idea/
+out/
+reasoner-output/
+!reasoner-output/.gitkeep
+*.iml
