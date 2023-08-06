@@ -24,5 +24,5 @@ License have been included with this distribution in the files [LICENSE.md](<LIC
 
 This ontology semantic matching service uses the following libraries in unmodified form:
 
-1) HermiT http://www.hermit-reasoner.com/, released under LGPL 3.0, see [lib/copyright/hermit-lgpl.md](<lib/copyright/hermit-lgpl.md>)
+1) HermiT http://www.hermit-reasoner.com/, released under LGPL 3.0, see [lib/copyright/hermit-lgpl.md](<lib/copyright/hermit-lgpl.md>) and [lib/copyright/hermit-gpl.md](<lib/copyright/hermit-gpl.md>)
 2) Py4J https://www.py4j.org/, released under the BSD license, see [lib/copyright/py4j-bsd.md](<lib/copyright/py4j-bsd.md>)
