@@ -18,6 +18,9 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this ontology semantic matching service.  If not, see <http://www.gnu.org/licenses/>.
+Copies of the GNU  Lesser General Public License and the GNU General Public
+License have been included with this distribution in the files [LICENSE.md](<LICENSE.md>) and
+[gpl.md](<gpl.md>).
 
 This ontology semantic matching service uses the following libraries in unmodified form:
 
