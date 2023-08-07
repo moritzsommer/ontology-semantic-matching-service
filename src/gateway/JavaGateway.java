@@ -2,17 +2,14 @@ package gateway;
 
 import additional.InferenceTypes;
 import additional.NoSuchIRIException;
-import additional.WrapperKey;
 import core.MatchingService;
 import core.Reasoner;
-import datastructures.MatchingScore;
 import datastructures.SimpleIO;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import py4j.GatewayServer;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import static additional.InferenceTypes.CLASSASSERTION;
 import static additional.InferenceTypes.SUBCLASS;
@@ -23,7 +20,7 @@ public class JavaGateway {
     public JavaGateway() {
     }
 
-    public void uploadOntology(String inputPath, String owlFileName, String owlFileExtension) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    public void uploadOntology(String inputPath, String owlFileName, String owlFileExtension) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
         SimpleIO io = new SimpleIO(
                 inputPath,
                 "reasoner-output/",
@@ -36,7 +33,7 @@ public class JavaGateway {
     }
 
     public float semanticMatchObjects(String iri1, String iri2) throws NoSuchIRIException {
-        return (float) matchingService.matchingScore(iri1, iri2).getScore();
+        return (float) matchingService.matchingScore(iri1, iri2).score();
     }
 
 //    public HashMap<WrapperKey, MatchingScore> semanticMatchAllObjects() throws NoSuchIRIException {

@@ -16,8 +16,8 @@ public class IatEquivalentDeepMatching {
         SimpleIO io = new SimpleIO(
                 "exampleresources/",
                 "reasoner-output/",
-                "people",
-                ".owl"
+                "deep_iat",
+                ".rdf"
         );
         InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION };
         Reasoner r = new Reasoner(io, inferenceTypes);

@@ -53,7 +53,7 @@ public class Reasoner {
     }
 
     private OWLOntology loadData(OWLOntologyManager manager, SimpleIO io) throws OWLOntologyCreationException {
-        String inputPath = io.getInputPath() + io.getOwlFileName() + io.getOwlFileExtension();
+        String inputPath = io.inputPath() + io.owlFileName() + io.owlFileExtension();
         File inputOntologyFile = new File(inputPath);
         return manager.loadOntologyFromOntologyDocument(inputOntologyFile);
     }
@@ -85,7 +85,7 @@ public class Reasoner {
         IRI newIri = IRI.create(inputIri.toString() + "-inferred");
         OWLOntology inferredOntology = manager.createOntology(newIri);
         reasoner.fillOntology(manager, inferredOntology);
-        String outputPath = io.getOutputPath() + io.getOwlFileName() + "-inferred" + io.getOwlFileExtension();
+        String outputPath = io.outputPath() + io.owlFileName() + "-inferred" + io.owlFileExtension();
         OutputStream outputStream = initialiseStream(outputPath);
         // Only one element in manager, input ontology
         manager.saveOntology(inferredOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
@@ -95,7 +95,7 @@ public class Reasoner {
     private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri, SimpleIO io) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-result");
         OWLOntology outputOntology = manager.createOntology(newIri, manager.getOntologies());
-        String outputPath = io.getOutputPath() + io.getOwlFileName() + "-result" + io.getOwlFileExtension();
+        String outputPath = io.outputPath() + io.owlFileName() + "-result" + io.owlFileExtension();
         OutputStream outputStream = initialiseStream(outputPath);
         // Two elements in manager, input and inferred ontologies
         manager.saveOntology(outputOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
