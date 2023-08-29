@@ -1,5 +1,6 @@
 package core;
 
+import additional.ConfigurationReader;
 import additional.WrapperKey;
 import additional.NoSuchIRIException;
 import datastructures.DataPropertyManager;
@@ -8,15 +9,17 @@ import datastructures.NamedIndividualManager;
 import datastructures.ObjectPropertyManager;
 import org.semanticweb.owlapi.model.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class MatchingService {
-    private final Reasoner reasoner;
+    private final OWLOntology ontology;
     private final HashMap<String, NamedIndividualManager> individuals;
     private final HashMap<WrapperKey, MatchingScoreManager> matchingScores;
+    private final ConfigurationReader configReader;
 
-    public Reasoner getReasoner() {
-        return reasoner;
+    public OWLOntology getOntology() {
+        return ontology;
     }
 
     public HashMap<String, NamedIndividualManager> getIndividuals() {
@@ -27,33 +30,21 @@ public class MatchingService {
         return matchingScores;
     }
 
-    public MatchingService(Reasoner reasoner) throws NoSuchIRIException {
-        this.reasoner = reasoner;
+    public MatchingService(Reasoner reasoner) throws NoSuchIRIException, IOException {
+        // ToDo Unification of Ontologies, Upload, Example for thesis
+        ontology = reasoner.getOutputOntology();
         individuals = new HashMap<String, NamedIndividualManager>();
         matchingScores = new HashMap<WrapperKey, MatchingScoreManager>();
-        storeIndividuals();
+        configReader = new ConfigurationReader();
+
+        storeNamedIndividuals();
+        storeClasses();
+        storeObjectProperties();
+        storeDataProperties();
     }
 
-    public static String[][] getAllCombinations(Set<String> inputSet) {
-        List<String[]> combinations = new ArrayList<>();
-        String[] inputArray = inputSet.toArray(new String[0]);
-        int n = inputArray.length;
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                String[] pair = new String[2];
-                pair[0] = inputArray[i];
-                pair[1] = inputArray[j];
-                combinations.add(pair);
-            }
-        }
-        return combinations.toArray(new String[0][0]);
-    }
-
-    private void storeIndividuals() throws NoSuchIRIException {
-        //ToDo split the method
-        OWLOntology output = reasoner.getOutputOntology();
-        // Store named individual
-        for(OWLAxiom i : output.getAxioms()) {
+    private void storeNamedIndividuals() {
+        for(OWLAxiom i : ontology.getAxioms()) {
             if(i.isOfType(AxiomType.DECLARATION)) {
                 OWLDeclarationAxiom assertion = (OWLDeclarationAxiom) i;
                 if(assertion.getEntity().isType(EntityType.NAMED_INDIVIDUAL)) {
@@ -64,8 +55,10 @@ public class MatchingService {
                 }
             }
         }
-        // Store class assertions of named individuals
-        for(OWLAxiom axiom : output.getAxioms()) {
+    }
+
+    private void storeClasses() throws NoSuchIRIException {
+        for(OWLAxiom axiom : ontology.getAxioms()) {
             if(axiom.isOfType(AxiomType.CLASS_ASSERTION)) {
                 OWLClassAssertionAxiom assertion = (OWLClassAssertionAxiom) axiom;
                 if(assertion.getIndividual().isNamed()) {
@@ -84,8 +77,10 @@ public class MatchingService {
                 }
             }
         }
-        // Store object property assertions
-        for(OWLAxiom axiom : output.getAxioms()) {
+    }
+
+    private void storeObjectProperties() throws NoSuchIRIException {
+        for(OWLAxiom axiom : ontology.getAxioms()) {
             if (axiom.isOfType(AxiomType.OBJECT_PROPERTY_ASSERTION)) {
                 OWLObjectPropertyAssertionAxiom assertion = (OWLObjectPropertyAssertionAxiom) axiom;
                 if (assertion.getSubject().isNamed()) {
@@ -105,8 +100,10 @@ public class MatchingService {
                 }
             }
         }
-        // Store data property assertions
-        for(OWLAxiom axiom : output.getAxioms()) {
+    }
+
+    private void storeDataProperties() throws NoSuchIRIException {
+        for(OWLAxiom axiom : ontology.getAxioms()) {
             if (axiom.isOfType(AxiomType.DATA_PROPERTY_ASSERTION)) {
                 OWLDataPropertyAssertionAxiom assertion = (OWLDataPropertyAssertionAxiom) axiom;
                 if (assertion.getSubject().isNamed()) {
@@ -117,7 +114,6 @@ public class MatchingService {
                         OWLPropertyAssertionObject assertionObject = assertion.getObject();
                         DataPropertyManager manager = new DataPropertyManager(property, assertionObject);
                         individuals.get(individualIRI).addDataProperty(manager);
-                        //System.out.println(individuals.get(individualIRI));
                     } else {
                         // Can't happen in well-defined ontology
                         throw new NoSuchIRIException(individualIRI);
@@ -125,56 +121,58 @@ public class MatchingService {
                 }
             }
         }
-        // Store data property assertions
-//        for(OWLAxiom axiom : output.getAxioms()) {
-//            if(axiom.isOfType(AxiomType.DATA_PROPERTY_ASSERTION)) {
-//                OWLDataPropertyAssertionAxiom assertion = (OWLDataPropertyAssertionAxiom) axiom;
-//                System.out.println(assertion.getSubject());
-//                System.out.println(assertion.getProperty());
-//                System.out.println(assertion.getObject().getLiteral());
-//                System.out.println();
-//            }
-//        }
     }
 
     private MatchingScoreManager computeMatchingScore(String iri1, String iri2) throws NoSuchIRIException {
-        if (!individuals.containsKey(iri1)) {
-            throw new NoSuchIRIException(iri1);
-        } else if (!individuals.containsKey(iri2)) {
-            throw new NoSuchIRIException(iri2);
-        }
-
+        // ToDo adapt score itself, take size of intersections into account, at least inform about it
         NamedIndividualManager manager1 = individuals.get(iri1);
+        if(manager1 == null) throw new NoSuchIRIException(iri1);
         NamedIndividualManager manager2 = individuals.get(iri2);
+        if(manager2 == null) throw new NoSuchIRIException(iri2);
 
-        // Class intersection
-        HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
-        HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
-        HashSet<OWLClassExpression> classIntersection = (HashSet<OWLClassExpression>) classSet1.clone();
-        classIntersection.retainAll(classSet2);
-
-        // Object property intersection
-        HashSet<ObjectPropertyManager> objectPropSet1 = manager1.getObjectProperties();
-        HashSet<ObjectPropertyManager> objectPropSet2 = manager2.getObjectProperties();
-        // .clone() vergessen, 2 Stunden Fehlersuche, programmieren ist pain. :)
-        HashSet<ObjectPropertyManager> objectPropIntersection = (HashSet<ObjectPropertyManager>) objectPropSet1.clone();
-        objectPropIntersection.retainAll(objectPropSet2);
-
-        // Data property intersection
-        HashSet<DataPropertyManager> dataPropSet1 = manager1.getDataProperties();
-        HashSet<DataPropertyManager> dataPropSet2 = manager2.getDataProperties();
-        HashSet<DataPropertyManager> dataPropIntersection = (HashSet<DataPropertyManager>) dataPropSet1.clone();
-        dataPropIntersection.retainAll(dataPropSet2);
-
-        // ToDo adapt computation modes and add mode for showing symmetric difference
+        double numerator = 0d;
+        double denominator = 0d;
         double score = 0d;
-        if(classSet1.size() + classSet2.size() + objectPropSet1.size() + objectPropSet2.size() > 0) {
-            // ToDo adapt score itself, take size of intersections into account, at least inform about it
-            // Sum of intersection sizes as fraction of all classes, properties the individuals belong to, [0,1]
-            score = (2d*classIntersection.size() + 2d*objectPropIntersection.size() + 2d*dataPropIntersection.size())
-                    / (classSet1.size() + classSet2.size() + objectPropSet1.size() + objectPropSet2.size() + dataPropSet1.size() + dataPropSet2.size());
+        HashSet<OWLClassExpression> classIntersection = new HashSet<OWLClassExpression>();
+        HashSet<ObjectPropertyManager> objectPropIntersection = new HashSet<ObjectPropertyManager>();
+        HashSet<DataPropertyManager> dataPropIntersection = new HashSet<DataPropertyManager>();
+
+        if(configReader.isMatchingClasses()) {
+            // Class intersection
+            HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
+            HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
+            // Clone used to protect classes in manager1 due to retainAll
+            classIntersection = (HashSet<OWLClassExpression>) classSet1.clone();
+            classIntersection.retainAll(classSet2);
+
+            numerator += 2d*classIntersection.size();
+            denominator += classSet1.size() + classSet2.size();
         }
 
+        if(configReader.isMatchingObjectProperties()) {
+            // Object property intersection
+            HashSet<ObjectPropertyManager> objectPropSet1 = manager1.getObjectProperties();
+            HashSet<ObjectPropertyManager> objectPropSet2 = manager2.getObjectProperties();
+            // .clone() vergessen, 2 Stunden Fehlersuche, programmieren ist pain. :)
+            objectPropIntersection = (HashSet<ObjectPropertyManager>) objectPropSet1.clone();
+            objectPropIntersection.retainAll(objectPropSet2);
+
+            numerator += 2d*objectPropIntersection.size();
+            denominator += objectPropSet1.size() + objectPropSet2.size();
+        }
+
+        if(configReader.isMatchingDataProperties()) {
+            // Data property intersection
+            HashSet<DataPropertyManager> dataPropSet1 = manager1.getDataProperties();
+            HashSet<DataPropertyManager> dataPropSet2 = manager2.getDataProperties();
+            dataPropIntersection = (HashSet<DataPropertyManager>) dataPropSet1.clone();
+            dataPropIntersection.retainAll(dataPropSet2);
+
+            numerator += 2d*dataPropIntersection.size();
+            denominator += dataPropSet1.size() + dataPropSet2.size();
+        }
+
+        if(denominator > 0) score = numerator / denominator;
         return new MatchingScoreManager(manager1.getIndividual(), manager2.getIndividual(), score, classIntersection, objectPropIntersection, dataPropIntersection);
     }
 
@@ -183,6 +181,21 @@ public class MatchingService {
         MatchingScoreManager value = computeMatchingScore(iri1, iri2);
         matchingScores.put(key, value);
         return  value;
+    }
+
+    private static String[][] getAllCombinations(Set<String> inputSet) {
+        List<String[]> combinations = new ArrayList<>();
+        String[] inputArray = inputSet.toArray(new String[0]);
+        int n = inputArray.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                String[] pair = new String[2];
+                pair[0] = inputArray[i];
+                pair[1] = inputArray[j];
+                combinations.add(pair);
+            }
+        }
+        return combinations.toArray(new String[0][0]);
     }
 
     public void matchingScore() throws NoSuchIRIException {
