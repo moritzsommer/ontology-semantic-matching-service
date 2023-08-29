@@ -16,7 +16,7 @@ public class IatEquivalentDeepReasoner {
                 "people",
                 ".owl"
         );
-        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION, EQUIVALENTCLASS, EQUIVALENTDATAPROPERTY, EQUIVALENTOBJECTPROPERTY };
+        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         Reasoner r = new Reasoner(io, inferenceTypes);
         System.out.println(r);
     }

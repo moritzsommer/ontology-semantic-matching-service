@@ -24,9 +24,7 @@ public class ContainsInputAxiomsTest {
                 "deep_iat",
                 ".rdf"
         );
-
-        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION, EQUIVALENTCLASS, EQUIVALENTDATAPROPERTY, EQUIVALENTOBJECTPROPERTY };
-
+        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         reasoner = new Reasoner(fileInputOutput, inferenceTypes);
     }
 

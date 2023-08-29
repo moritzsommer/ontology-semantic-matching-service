@@ -71,8 +71,9 @@ public class Reasoner {
         List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<InferredAxiomGenerator<? extends OWLAxiom>>();
         for (InferenceTypes i : inferenceTypes) {
             switch (i) {
-                case SUBCLASS -> generators.add(new InferredSubClassAxiomGenerator());
                 case CLASSASSERTION -> generators.add(new InferredClassAssertionAxiomGenerator());
+                case PROPERTYASSERTION -> generators.add(new InferredPropertyAssertionGenerator());
+                case SUBCLASS -> generators.add(new InferredSubClassAxiomGenerator());
                 case EQUIVALENTCLASS -> generators.add(new InferredEquivalentClassAxiomGenerator());
                 case EQUIVALENTDATAPROPERTY -> generators.add(new InferredEquivalentDataPropertiesAxiomGenerator());
                 case EQUIVALENTOBJECTPROPERTY -> generators.add(new InferredEquivalentObjectPropertyAxiomGenerator());

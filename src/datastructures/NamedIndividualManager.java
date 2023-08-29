@@ -1,16 +1,15 @@
 package datastructures;
 
-import additional.WrapperKey;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class NamedIndividualManager {
     private final OWLNamedIndividual individual;
     private final HashSet<OWLClassExpression> classes;
-    private final HashMap<WrapperKey, ObjectPropertyManager> objectProperties;
+    private final HashSet<ObjectPropertyManager> objectProperties;
+    private final HashSet<DataPropertyManager> dataProperties;
 
     public OWLNamedIndividual getIndividual() {
         return individual;
@@ -20,30 +19,31 @@ public class NamedIndividualManager {
         return classes;
     }
 
-    public HashMap<WrapperKey, ObjectPropertyManager> getObjectProperties() {
+    public HashSet<ObjectPropertyManager> getObjectProperties() {
         return objectProperties;
+    }
+
+    public HashSet<DataPropertyManager> getDataProperties() {
+        return dataProperties;
     }
 
     public NamedIndividualManager(OWLNamedIndividual individual) {
         this.individual = individual;
         classes = new HashSet<OWLClassExpression>();
-        objectProperties = new HashMap<WrapperKey, ObjectPropertyManager>();
+        objectProperties = new HashSet<ObjectPropertyManager>();
+        dataProperties = new HashSet<DataPropertyManager>();
     }
 
     public void addClass(OWLClassExpression classExpression) {
         classes.add(classExpression);
     }
 
-    public boolean objectPropertiesContain(WrapperKey key) {
-        return objectProperties.containsKey(key);
+    public void addObjectProperty(ObjectPropertyManager value) {
+        objectProperties.add(value);
     }
 
-    public void addObjectProperty(WrapperKey key, ObjectPropertyManager value) {
-        objectProperties.put(key, value);
-    }
-
-    public void addObjectPropertyIndividual(WrapperKey key, OWLNamedIndividual individual) {
-        objectProperties.get(key).addIndividual(individual);
+    public void addDataProperty(DataPropertyManager value) {
+        dataProperties.add(value);
     }
 
     @Override
@@ -57,16 +57,23 @@ public class NamedIndividualManager {
             output.append(i).append("\n");
         }
         output.append("\n");
-        output.append("Amount of classes: ").append(classes.size()).append("\n\n");
+        output.append("Amount of Classes: ").append(classes.size()).append("\n\n");
 
         output.append("ObjectProperties:\n\n");
 
-        for (HashMap.Entry<WrapperKey, ObjectPropertyManager> entry : objectProperties.entrySet()) {
-            output.append(entry.getValue()).append("\n");
+        for (ObjectPropertyManager i : objectProperties) {
+            output.append(i).append("\n\n");
         }
-        output.append("\n");
 
-        output.append("Amount of ObjectProperties: ").append(classes.size()).append("\n\n");
+        output.append("Amount of ObjectProperties: ").append(objectProperties.size()).append("\n\n");
+
+        output.append("DataProperties:\n\n");
+
+        for (DataPropertyManager i : dataProperties) {
+            output.append(i).append("\n\n");
+        }
+
+        output.append("Amount of DataProperties: ").append(dataProperties.size()).append("\n\n");
         output.append(new String(new char[150]).replace("\0", "-"));
 
         return output.toString();

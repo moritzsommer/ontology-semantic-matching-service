@@ -12,7 +12,7 @@ import java.io.IOException;
 import static additional.InferenceTypes.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ContainsInferredAxiomsTest{
+public class ContainsInferredAxiomsTest {
     private Reasoner reasoner;
 
     @BeforeEach
@@ -23,15 +23,13 @@ public class ContainsInferredAxiomsTest{
                 "deep_iat",
                 ".rdf"
         );
-
-        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION, EQUIVALENTCLASS, EQUIVALENTDATAPROPERTY, EQUIVALENTOBJECTPROPERTY };
-
+        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         reasoner = new Reasoner(fileInputOutput, inferenceTypes);
     }
 
     @Test
     public void testValid() {
-        for(OWLAxiom i : reasoner.getInferredOntology().getAxioms()) {
+        for (OWLAxiom i : reasoner.getInferredOntology().getAxioms()) {
             assertTrue(reasoner.getOutputOntology().getAxioms().contains(i));
         }
     }

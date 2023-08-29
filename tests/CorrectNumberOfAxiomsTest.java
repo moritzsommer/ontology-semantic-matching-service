@@ -23,15 +23,13 @@ public class CorrectNumberOfAxiomsTest {
                 "deep_iat",
                 ".rdf"
         );
-
-        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION, EQUIVALENTCLASS, EQUIVALENTDATAPROPERTY, EQUIVALENTOBJECTPROPERTY };
-
+        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         reasoner = new Reasoner(fileInputOutput, inferenceTypes);
     }
 
     @Test
     public void testValid() {
-        for(OWLAxiom i : reasoner.getInputOntology().getAxioms()) {
+        for (OWLAxiom i : reasoner.getInputOntology().getAxioms()) {
             assertTrue(reasoner.getOutputOntology().getAxioms().contains(i), reasoner.getOutputOntology().getOntologyID() + " does not contain " + i);
         }
     }

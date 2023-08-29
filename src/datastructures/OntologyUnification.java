@@ -1,5 +1,5 @@
 package datastructures;
 
 public class OntologyUnification {
-    // Eingangsontologien vereinigen, beliebige Anzahl
+    // ToDo Eingangsontologien vereinigen, beliebige Anzahl
 }
