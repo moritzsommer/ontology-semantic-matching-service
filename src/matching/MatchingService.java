@@ -1,8 +1,8 @@
-package core;
+package matching;
 
-import additional.ConfigurationReader;
-import additional.WrapperKey;
-import additional.NoSuchIRIException;
+import utils.ConfigurationReader;
+import utils.WrapperKey;
+import utils.NoSuchIRIException;
 import datastructures.DataPropertyManager;
 import datastructures.MatchingScoreManager;
 import datastructures.NamedIndividualManager;
@@ -31,7 +31,6 @@ public class MatchingService {
     }
 
     public MatchingService(Reasoner reasoner) throws NoSuchIRIException, IOException {
-        // ToDo Unification of Ontologies, Upload, Example for thesis
         ontology = reasoner.getOutputOntology();
         individuals = new HashMap<String, NamedIndividualManager>();
         matchingScores = new HashMap<WrapperKey, MatchingScoreManager>();
@@ -183,6 +182,13 @@ public class MatchingService {
         return  value;
     }
 
+    public void matchingScore() throws NoSuchIRIException {
+        String[][] combinations = getAllCombinations(individuals.keySet());
+        for (String[] pair : combinations) {
+            matchingScore(pair[0], pair[1]);
+        }
+    }
+
     private static String[][] getAllCombinations(Set<String> inputSet) {
         List<String[]> combinations = new ArrayList<>();
         String[] inputArray = inputSet.toArray(new String[0]);
@@ -198,13 +204,6 @@ public class MatchingService {
         return combinations.toArray(new String[0][0]);
     }
 
-    public void matchingScore() throws NoSuchIRIException {
-        String[][] combinations = getAllCombinations(individuals.keySet());
-        for (String[] pair : combinations) {
-            matchingScore(pair[0], pair[1]);
-        }
-    }
-
     @Override
     public String toString() {
         int counter = 0;
@@ -213,16 +212,20 @@ public class MatchingService {
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
             //if(entry.getValue().getScore() > 0.8d && entry.getValue().getScore() < 1) {
-            if(entry.getValue().score() > 0d) {
+            if(entry.getValue().score() >= configReader.getFilterMinimumScore()) {
                 output.append(entry.getValue()).append("\n");
                 counter++;
             }
         }
         output.append("\n");
 
-        output.append("Amount of matchings with value > 0: ").append(counter).append("\n\n");
+        output.append("Amount of matchings with value >= ").append(configReader.getFilterMinimumScore()).append(": ").append(counter).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
 
         return output.toString();
     }
 }
+// ToDo IatUpload, Example for thesis
+// ToDo Test for files that dont have file extension in their name
+// ToDo gradle build
+// ToDo test upload

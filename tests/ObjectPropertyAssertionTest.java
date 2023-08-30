@@ -1,8 +1,8 @@
-import additional.InferenceTypes;
-import additional.NoSuchIRIException;
-import core.MatchingService;
-import core.Reasoner;
-import datastructures.SimpleIO;
+import utils.InferenceTypes;
+import utils.NoSuchIRIException;
+import matching.MatchingService;
+import matching.Reasoner;
+import upload.SimpleInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -10,8 +10,9 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import java.io.IOException;
 
-import static additional.InferenceTypes.CLASSASSERTION;
-import static additional.InferenceTypes.PROPERTYASSERTION;
+import static utils.InferenceTypes.CLASSASSERTION;
+import static utils.InferenceTypes.PROPERTYASSERTION;
+import static upload.InputTypes.TEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ObjectPropertyAssertionTest {
@@ -19,14 +20,13 @@ public class ObjectPropertyAssertionTest {
 
     @BeforeEach
     public void setup() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        SimpleIO io = new SimpleIO(
-                "exampleresources/",
-                "reasoner-output/",
+        SimpleInput input = new SimpleInput(
+                TEST,
                 "people",
                 ".owl"
         );
         InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
-        Reasoner r = new Reasoner(io, inferenceTypes);
+        Reasoner r = new Reasoner(input, inferenceTypes);
         matchingService = new MatchingService(r);
     }
 

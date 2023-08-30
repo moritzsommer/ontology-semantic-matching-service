@@ -1,7 +1,9 @@
-package core;
+package matching;
 
-import additional.InferenceTypes;
-import datastructures.SimpleIO;
+import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
+import upload.UploadFiles;
+import utils.InferenceTypes;
+import upload.SimpleInput;
 import org.semanticweb.HermiT.Configuration;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
@@ -14,46 +16,58 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import static upload.InputTypes.REGULAR;
 
 public class Reasoner {
-    private final OWLOntology inputOntology;
-    private final OWLOntology inferredOntology;
+    private final ArrayList<OWLOntology> inputOntologies;
+    private final ArrayList<OWLOntology> inferredOntologies;
     private final OWLOntology outputOntology;
-    private final OWLOntologyManager manager;
-    private final InferredOntologyGenerator generator;
 
-    public OWLOntology getInputOntology() {
-        return inputOntology;
+    public ArrayList<OWLOntology> getInputOntologies() {
+        return inputOntologies;
     }
 
-    public OWLOntology getInferredOntology() {
-        return inferredOntology;
+    public ArrayList<OWLOntology> getInferredOntologies() {
+        return inferredOntologies;
     }
 
     public OWLOntology getOutputOntology() {
         return outputOntology;
     }
 
-    public OWLOntologyManager getManager() {
-        return manager;
+    public Reasoner(ArrayList<SimpleInput> input, InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        inputOntologies = new ArrayList<OWLOntology>();
+        inferredOntologies = new ArrayList<OWLOntology>();
+        OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+        // Identical axioms from input Ontologies removed in output Ontology, but each input needs unique IRI in rdf:about
+        for (SimpleInput i : input) {
+            OWLOntology inputOntology = loadData(manager, i);
+            InferredOntologyGenerator generator = setupReasoner(inputOntology, inferenceTypes);
+            inputOntologies.add(inputOntology);
+            inferredOntologies.add(computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI(), i));
+        }
+        if(!inputOntologies.isEmpty() && !input.isEmpty()) {
+            outputOntology = computeOutputOntology(manager, inputOntologies.get(0).getOntologyID().getOntologyIRI(), input.get(0));
+        } else {
+            // Cover edge case no input ontologies
+            outputOntology = computeOutputOntology(manager, IRI.create("empty"), new SimpleInput(REGULAR, "empty", ".empty"));
+        }
     }
 
-    public InferredOntologyGenerator getGenerator() {
-        return generator;
+    public Reasoner(SimpleInput input, InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        this(new ArrayList<SimpleInput>(Collections.singletonList(input)), inferenceTypes);
     }
 
-    public Reasoner(SimpleIO io, InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        manager = OWLManager.createOWLOntologyManager();
-        inputOntology = loadData(manager, io);
-        generator = setupReasoner(inputOntology, inferenceTypes);
-        inferredOntology = computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI(), io);
-        outputOntology = computeOutputOntology(manager, inputOntology.getOntologyID().getOntologyIRI(), io);
+    public Reasoner(InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        this(UploadFiles.getAllInputFiles(), inferenceTypes);
     }
 
-    private OWLOntology loadData(OWLOntologyManager manager, SimpleIO io) throws OWLOntologyCreationException {
-        String inputPath = io.inputPath() + io.owlFileName() + io.owlFileExtension();
+    private OWLOntology loadData(OWLOntologyManager manager, SimpleInput input) throws OWLOntologyCreationException {
+        String inputPath = input.inputType().getPath() + input.owlFileName() + input.owlFileExtension();
         File inputOntologyFile = new File(inputPath);
         return manager.loadOntologyFromOntologyDocument(inputOntologyFile);
     }
@@ -82,24 +96,29 @@ public class Reasoner {
         return generators;
     }
 
-    private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri, SimpleIO io) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri, SimpleInput input) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-inferred");
         OWLOntology inferredOntology = manager.createOntology(newIri);
         reasoner.fillOntology(manager, inferredOntology);
-        String outputPath = io.outputPath() + io.owlFileName() + "-inferred" + io.owlFileExtension();
+        String outputPath = "reasoner-output/" + input.owlFileName() + "-inferred" + input.owlFileExtension();
         OutputStream outputStream = initialiseStream(outputPath);
         // Only one element in manager, input ontology
         manager.saveOntology(inferredOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
         return inferredOntology;
     }
 
-    private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri, SimpleIO io) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri, SimpleInput input) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-result");
         OWLOntology outputOntology = manager.createOntology(newIri, manager.getOntologies());
-        String outputPath = io.outputPath() + io.owlFileName() + "-result" + io.owlFileExtension();
+        String outputPath = "reasoner-output/" + input.owlFileName() + "-result" + input.owlFileExtension();
         OutputStream outputStream = initialiseStream(outputPath);
-        // Two elements in manager, input and inferred ontologies
-        manager.saveOntology(outputOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
+        if(!inputOntologies.isEmpty()) {
+            // Two elements in manager, input and inferred ontologies
+            manager.saveOntology(outputOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
+        } else {
+            // Cover edge case no input ontologies
+            manager.saveOntology(outputOntology, new RDFXMLOntologyFormat(), outputStream);
+        }
         return outputOntology;
     }
 
@@ -118,25 +137,40 @@ public class Reasoner {
         output.append("Summary: \n\n");
         output.append(new String(new char[200]).replace("\0", "-")).append("\n\n");
 
-        output.append("Axioms of input Ontology:\n\n");
-        for (OWLAxiom i : inputOntology.getAxioms()) {
-            output.append(i).append("\n");
+        output.append("Axioms of input Ontologies:\n\n");
+        int inputSize = 0;
+        for(OWLOntology i : inputOntologies) {
+            inputSize += i.getAxioms().size();
+            for (OWLAxiom j : i.getAxioms()) {
+                output.append(j).append("\n");
+            }
         }
         output.append("\n");
-        output.append("Amount of axioms: ").append(inputOntology.getAxioms().size()).append("\n\n");
+        output.append("Amount of axioms: ").append(inputSize).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-")).append("\n\n");
 
         output.append("Axioms of inferred Ontology:\n\n");
-        for (OWLAxiom i : inferredOntology.getAxioms()) {
-            output.append(i).append("\n");
+        int inferredSize = 0;
+        for(OWLOntology i : inferredOntologies) {
+            inferredSize += i.getAxioms().size();
+            for (OWLAxiom j : i.getAxioms()) {
+                output.append(j).append("\n");
+            }
         }
         output.append("\n");
-        output.append("Amount of axioms: ").append(inferredOntology.getAxioms().size()).append("\n\n");
+        output.append("Amount of axioms: ").append(inferredSize).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-")).append("\n\n");
 
         output.append("Axioms of original and inferred Ontology, duplicates:\n\n");
-        Set<OWLAxiom> intersection = inputOntology.getAxioms();
-        intersection.retainAll(inferredOntology.getAxioms());
+        HashSet<OWLAxiom> intersection = new HashSet<OWLAxiom>();
+        HashSet<OWLAxiom> inferred = new HashSet<OWLAxiom>();
+        for(OWLOntology i : inputOntologies) {
+            intersection.addAll(i.getAxioms());
+        }
+        for(OWLOntology i : inferredOntologies) {
+            inferred.addAll(i.getAxioms());
+        }
+        intersection.retainAll(inferred);
         for (OWLAxiom i : intersection) {
             output.append(i).append("\n");
         }

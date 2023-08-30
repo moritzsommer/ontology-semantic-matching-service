@@ -1,4 +1,4 @@
-package additional;
+package utils;
 
 public enum InferenceTypes {
     CLASSASSERTION,

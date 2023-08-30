@@ -1,4 +1,4 @@
-package additional;
+package utils;
 
 public class NoSuchIRIException extends Exception {
     public NoSuchIRIException(String IRI) {

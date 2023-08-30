@@ -1,15 +1,17 @@
-import additional.InferenceTypes;
-import core.Reasoner;
-import datastructures.SimpleIO;
+import utils.InferenceTypes;
+import matching.Reasoner;
+import upload.SimpleInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import java.io.IOException;
 
-import static additional.InferenceTypes.*;
+import static utils.InferenceTypes.*;
+import static upload.InputTypes.TEST;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContainsInferredAxiomsTest {
@@ -17,20 +19,21 @@ public class ContainsInferredAxiomsTest {
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        SimpleIO fileInputOutput = new SimpleIO(
-                "testresources/",
-                "reasoner-output/",
+        SimpleInput input = new SimpleInput(
+                TEST,
                 "deep_iat",
                 ".rdf"
         );
         InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
-        reasoner = new Reasoner(fileInputOutput, inferenceTypes);
+        reasoner = new Reasoner(input, inferenceTypes);
     }
 
     @Test
     public void testValid() {
-        for (OWLAxiom i : reasoner.getInferredOntology().getAxioms()) {
-            assertTrue(reasoner.getOutputOntology().getAxioms().contains(i));
+        for (OWLOntology i : reasoner.getInferredOntologies()) {
+            for (OWLAxiom j : i.getAxioms()) {
+                assertTrue(reasoner.getOutputOntology().getAxioms().contains(j));
+            }
         }
     }
 }

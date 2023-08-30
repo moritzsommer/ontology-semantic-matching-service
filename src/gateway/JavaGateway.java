@@ -1,18 +1,12 @@
 package gateway;
 
-import additional.InferenceTypes;
-import additional.NoSuchIRIException;
-import core.MatchingService;
-import core.Reasoner;
-import datastructures.SimpleIO;
+import utils.NoSuchIRIException;
+import matching.MatchingService;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import py4j.GatewayServer;
 
 import java.io.IOException;
-
-import static additional.InferenceTypes.CLASSASSERTION;
-import static additional.InferenceTypes.SUBCLASS;
 
 public class JavaGateway {
     private MatchingService matchingService;
@@ -21,15 +15,15 @@ public class JavaGateway {
     }
 
     public void uploadOntology(String inputPath, String owlFileName, String owlFileExtension) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        SimpleIO io = new SimpleIO(
-                inputPath,
-                "reasoner-output/",
-                owlFileName,
-                owlFileExtension
-        );
-        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION };
-        Reasoner reasoner = new Reasoner(io, inferenceTypes);
-        matchingService = new MatchingService(reasoner);
+//        SimpleIO io = new SimpleIO(
+//                inputPath,
+//                "reasoner-output/",
+//                owlFileName,
+//                owlFileExtension
+//        );
+//        InferenceTypes[] inferenceTypes = { SUBCLASS, CLASSASSERTION };
+//        Reasoner reasoner = new Reasoner(io, inferenceTypes);
+//        matchingService = new MatchingService(reasoner);
     }
 
     public float semanticMatchObjects(String iri1, String iri2) throws NoSuchIRIException {

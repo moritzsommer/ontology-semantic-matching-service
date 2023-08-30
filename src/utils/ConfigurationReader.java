@@ -1,4 +1,4 @@
-package additional;
+package utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,6 +8,7 @@ public class ConfigurationReader {
     private final boolean matchingClasses;
     private final boolean matchingObjectProperties;
     private final boolean matchingDataProperties;
+    private final double filterMinimumScore;
 
     public boolean isMatchingClasses() {
         return matchingClasses;
@@ -21,8 +22,11 @@ public class ConfigurationReader {
         return matchingDataProperties;
     }
 
+    public double getFilterMinimumScore() {
+        return filterMinimumScore;
+    }
+
     public ConfigurationReader() throws IOException {
-        // ToDo add Property for minimum matching score
         // ToDo add mode for showing symmetric difference of individuals
         // ToDo adjust String if certain values dont influence the matching Score
         Properties properties = new Properties();
@@ -32,6 +36,7 @@ public class ConfigurationReader {
        matchingClasses = Boolean.parseBoolean(properties.getProperty("matching.classes"));
        matchingObjectProperties = Boolean.parseBoolean(properties.getProperty("matching.objectProperties"));
        matchingDataProperties = Boolean.parseBoolean(properties.getProperty("matching.dataProperties"));
+       filterMinimumScore = Double.parseDouble(properties.getProperty("filter.minimumScore", "0"));
 
        configFile.close();
     }
