@@ -131,16 +131,36 @@ public class Reasoner {
         return new FileOutputStream(resultingOntologyFile);
     }
 
+    public int numberOfInputAxioms() {
+        int res = 0;
+        for (OWLOntology i : inputOntologies) {
+            res += i.getAxiomCount();
+        }
+        return res;
+    }
+
+    public int numberOfInferredAxioms() {
+        int res = 0;
+        for (OWLOntology i : inferredOntologies) {
+            res += i.getAxiomCount();
+        }
+        return res;
+    }
+
+    public int numberOfOutputAxioms() {
+        return outputOntology.getAxiomCount();
+    }
+
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder(new String(new char[200]).replace("\0", "-")).append("\n\n");
-        output.append("Summary: \n\n");
+        output.append("Summary:\n\n");
         output.append(new String(new char[200]).replace("\0", "-")).append("\n\n");
 
         output.append("Axioms of input Ontologies:\n\n");
         int inputSize = 0;
         for(OWLOntology i : inputOntologies) {
-            inputSize += i.getAxioms().size();
+            inputSize += i.getAxiomCount();
             for (OWLAxiom j : i.getAxioms()) {
                 output.append(j).append("\n");
             }
@@ -152,7 +172,7 @@ public class Reasoner {
         output.append("Axioms of inferred Ontology:\n\n");
         int inferredSize = 0;
         for(OWLOntology i : inferredOntologies) {
-            inferredSize += i.getAxioms().size();
+            inferredSize += i.getAxiomCount();
             for (OWLAxiom j : i.getAxioms()) {
                 output.append(j).append("\n");
             }
@@ -183,7 +203,7 @@ public class Reasoner {
             output.append(i).append("\n");
         }
         output.append("\n");
-        output.append("Amount of axioms: ").append(outputOntology.getAxioms().size()).append("\n\n");
+        output.append("Amount of axioms: ").append(outputOntology.getAxiomCount()).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
 
         return output.toString();

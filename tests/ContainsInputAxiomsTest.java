@@ -10,8 +10,8 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import java.io.IOException;
 
+import static upload.InputTypes.TEST;
 import static utils.InferenceTypes.*;
-import static upload.InputTypes.EXAMPLE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContainsInputAxiomsTest {
@@ -20,12 +20,11 @@ public class ContainsInputAxiomsTest {
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         SimpleInput input = new SimpleInput(
-                EXAMPLE,
+                TEST,
                 "deep_iat",
                 ".rdf"
         );
-        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
-        reasoner = new Reasoner(input, inferenceTypes);
+        reasoner = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
     }
 
     @Test

@@ -140,7 +140,7 @@ public class MatchingService {
             // Class intersection
             HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
             HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
-            // Clone used to protect classes in manager1 due to retainAll
+            // Clone() used to protect classes in manager1 due to retainAll
             classIntersection = (HashSet<OWLClassExpression>) classSet1.clone();
             classIntersection.retainAll(classSet2);
 
@@ -212,14 +212,14 @@ public class MatchingService {
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
             //if(entry.getValue().getScore() > 0.8d && entry.getValue().getScore() < 1) {
-            if(entry.getValue().score() >= configReader.getFilterMinimumScore()) {
+            if(entry.getValue().score() > configReader.getFilterMinimumScore()) {
                 output.append(entry.getValue()).append("\n");
                 counter++;
             }
         }
         output.append("\n");
 
-        output.append("Amount of matchings with value >= ").append(configReader.getFilterMinimumScore()).append(": ").append(counter).append("\n\n");
+        output.append("Amount of matchings with value > ").append(configReader.getFilterMinimumScore()).append(": ").append(counter).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
 
         return output.toString();

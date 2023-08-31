@@ -20,7 +20,7 @@ public class IatEquivalentDeepExtendedReasoner {
         );
         SimpleInput input2 = new SimpleInput(
                 EXAMPLE,
-                "deep_iat_extend",
+                "deep_iat_duplicate",
                 ".rdf"
         );
         ArrayList<SimpleInput> input = new ArrayList<SimpleInput>(List.of(input1, input2));

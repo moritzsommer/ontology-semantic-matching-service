@@ -24,8 +24,7 @@ public class ContainsInferredAxiomsTest {
                 "deep_iat",
                 ".rdf"
         );
-        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
-        reasoner = new Reasoner(input, inferenceTypes);
+        reasoner = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
     }
 
     @Test

@@ -5,3 +5,8 @@ reasoner-input/
 !reasoner-output/.gitkeep
 !reasoner-input/.gitkeep
 *.iml
+.gradle/
+build/
+gradle/
+gradlew
+gradlew.bat

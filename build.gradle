@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation files('lib/HermiT.jar')
+    implementation files('lib/py4j-0.10.9.7.jar')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src', 'examples']
+        resources.srcDirs = ['src']
+    }
+    test {
+        java.srcDirs = ['tests']
+        resources.srcDirs = ['testresources']
+    }
+}
+
+test {
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}

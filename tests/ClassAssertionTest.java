@@ -24,8 +24,7 @@ public class ClassAssertionTest {
                 "people",
                 ".owl"
         );
-        InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
-        Reasoner r = new Reasoner(input, inferenceTypes);
+        Reasoner r = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
         matchingService = new MatchingService(r);
     }
 
