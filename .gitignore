@@ -8,5 +8,3 @@ reasoner-input/
 .gradle/
 build/
 gradle/
-gradlew
-gradlew.bat
