@@ -7,4 +7,3 @@ reasoner-input/
 *.iml
 .gradle/
 build/
-gradle/
