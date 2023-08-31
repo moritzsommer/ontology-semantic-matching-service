@@ -32,8 +32,8 @@ public class MatchingService {
 
     public MatchingService(Reasoner reasoner) throws NoSuchIRIException, IOException {
         ontology = reasoner.getOutputOntology();
-        individuals = new HashMap<String, NamedIndividualManager>();
-        matchingScores = new HashMap<WrapperKey, MatchingScoreManager>();
+        individuals = new HashMap<>();
+        matchingScores = new HashMap<>();
         configReader = new ConfigurationReader();
 
         storeNamedIndividuals();
@@ -132,9 +132,9 @@ public class MatchingService {
         double numerator = 0d;
         double denominator = 0d;
         double score = 0d;
-        HashSet<OWLClassExpression> classIntersection = new HashSet<OWLClassExpression>();
-        HashSet<ObjectPropertyManager> objectPropIntersection = new HashSet<ObjectPropertyManager>();
-        HashSet<DataPropertyManager> dataPropIntersection = new HashSet<DataPropertyManager>();
+        HashSet<OWLClassExpression> classIntersection = new HashSet<>();
+        HashSet<ObjectPropertyManager> objectPropIntersection = new HashSet<>();
+        HashSet<DataPropertyManager> dataPropIntersection = new HashSet<>();
 
         if(configReader.isMatchingClasses()) {
             // Class intersection

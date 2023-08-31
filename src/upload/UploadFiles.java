@@ -16,7 +16,7 @@ public class UploadFiles {
     }
 
     public static ArrayList<SimpleInput> getAllInputFiles() {
-        ArrayList<SimpleInput> res = new ArrayList<SimpleInput>();
+        ArrayList<SimpleInput> res = new ArrayList<>();
         File directory = new File("reasoner-input/");
         for (String fileName : directory.list()) {
             String name = getFileNameWithoutExtension(fileName);

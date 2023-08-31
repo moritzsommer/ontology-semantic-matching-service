@@ -29,9 +29,9 @@ public class NamedIndividualManager {
 
     public NamedIndividualManager(OWLNamedIndividual individual) {
         this.individual = individual;
-        classes = new HashSet<OWLClassExpression>();
-        objectProperties = new HashSet<ObjectPropertyManager>();
-        dataProperties = new HashSet<DataPropertyManager>();
+        classes = new HashSet<>();
+        objectProperties = new HashSet<>();
+        dataProperties = new HashSet<>();
     }
 
     public void addClass(OWLClassExpression classExpression) {

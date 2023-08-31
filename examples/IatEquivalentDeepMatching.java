@@ -12,11 +12,6 @@ import static upload.InputTypes.*;
 
 public class IatEquivalentDeepMatching {
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-//        SimpleInput input = new SimpleInput(
-//                EXAMPLE,
-//                "deep_iat",
-//                ".rdf"
-//        );
         SimpleInput input = new SimpleInput(
                 EXAMPLE,
                 "people",

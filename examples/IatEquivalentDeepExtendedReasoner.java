@@ -23,7 +23,7 @@ public class IatEquivalentDeepExtendedReasoner {
                 "deep_iat_duplicate",
                 ".rdf"
         );
-        ArrayList<SimpleInput> input = new ArrayList<SimpleInput>(List.of(input1, input2));
+        ArrayList<SimpleInput> input = new ArrayList<>(List.of(input1, input2));
         InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         Reasoner r = new Reasoner(input, inferenceTypes);
         System.out.println(r);

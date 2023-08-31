@@ -14,7 +14,7 @@ public class JavaGateway {
     public JavaGateway() {
     }
 
-    public void uploadOntology(String inputPath, String owlFileName, String owlFileExtension) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
+    public void uploadOntology(String inputPath, String owlFileName, String owlFileExtension) {
 //        SimpleIO io = new SimpleIO(
 //                inputPath,
 //                "reasoner-output/",

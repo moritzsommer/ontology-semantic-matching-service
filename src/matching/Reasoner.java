@@ -40,8 +40,8 @@ public class Reasoner {
     }
 
     public Reasoner(ArrayList<SimpleInput> input, InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        inputOntologies = new ArrayList<OWLOntology>();
-        inferredOntologies = new ArrayList<OWLOntology>();
+        inputOntologies = new ArrayList<>();
+        inferredOntologies = new ArrayList<>();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         // Identical axioms from input Ontologies removed in output Ontology, but each input needs unique IRI in rdf:about
         for (SimpleInput i : input) {
@@ -59,7 +59,7 @@ public class Reasoner {
     }
 
     public Reasoner(SimpleInput input, InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        this(new ArrayList<SimpleInput>(Collections.singletonList(input)), inferenceTypes);
+        this(new ArrayList<>(Collections.singletonList(input)), inferenceTypes);
     }
 
     public Reasoner(InferenceTypes[] inferenceTypes) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
@@ -82,7 +82,7 @@ public class Reasoner {
     }
 
     private List<InferredAxiomGenerator<? extends OWLAxiom>> defineInferenceGenerators(InferenceTypes[] inferenceTypes) {
-        List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<InferredAxiomGenerator<? extends OWLAxiom>>();
+        List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<>();
         for (InferenceTypes i : inferenceTypes) {
             switch (i) {
                 case CLASSASSERTION -> generators.add(new InferredClassAssertionAxiomGenerator());
@@ -182,8 +182,8 @@ public class Reasoner {
         output.append(new String(new char[200]).replace("\0", "-")).append("\n\n");
 
         output.append("Axioms of original and inferred Ontology, duplicates:\n\n");
-        HashSet<OWLAxiom> intersection = new HashSet<OWLAxiom>();
-        HashSet<OWLAxiom> inferred = new HashSet<OWLAxiom>();
+        HashSet<OWLAxiom> intersection = new HashSet<>();
+        HashSet<OWLAxiom> inferred = new HashSet<>();
         for(OWLOntology i : inputOntologies) {
             intersection.addAll(i.getAxioms());
         }

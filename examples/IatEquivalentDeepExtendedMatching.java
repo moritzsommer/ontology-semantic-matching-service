@@ -24,7 +24,7 @@ public class IatEquivalentDeepExtendedMatching {
                 "deep_iat_extend",
                 ".rdf"
         );
-        ArrayList<SimpleInput> input = new ArrayList<SimpleInput>(List.of(input1, input2));
+        ArrayList<SimpleInput> input = new ArrayList<>(List.of(input1, input2));
         InferenceTypes[] inferenceTypes = {CLASSASSERTION, PROPERTYASSERTION};
         Reasoner r = new Reasoner(input, inferenceTypes);
         MatchingService m = new MatchingService(r);
