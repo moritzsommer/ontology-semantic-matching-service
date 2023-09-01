@@ -18,16 +18,8 @@ public class MatchingService {
     private final HashMap<WrapperKey, MatchingScoreManager> matchingScores;
     private final ConfigurationReader configReader;
 
-    public OWLOntology getOntology() {
-        return ontology;
-    }
-
     public HashMap<String, NamedIndividualManager> getIndividuals() {
         return individuals;
-    }
-
-    public HashMap<WrapperKey, MatchingScoreManager> getMatchingScores() {
-        return matchingScores;
     }
 
     public MatchingService(Reasoner reasoner) throws NoSuchIRIException, IOException {
@@ -140,8 +132,8 @@ public class MatchingService {
             // Class intersection
             HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
             HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
-            // Clone() used to protect classes in manager1 due to retainAll
-            classIntersection = (HashSet<OWLClassExpression>) classSet1.clone();
+            // New Set required to protect original set, retainAll deletes elements
+            classIntersection = new HashSet<>(classSet1);
             classIntersection.retainAll(classSet2);
 
             numerator += 2d*classIntersection.size();
@@ -152,8 +144,7 @@ public class MatchingService {
             // Object property intersection
             HashSet<ObjectPropertyManager> objectPropSet1 = manager1.getObjectProperties();
             HashSet<ObjectPropertyManager> objectPropSet2 = manager2.getObjectProperties();
-            // .clone() vergessen, 2 Stunden Fehlersuche, programmieren ist pain. :)
-            objectPropIntersection = (HashSet<ObjectPropertyManager>) objectPropSet1.clone();
+            objectPropIntersection = new HashSet<>(objectPropSet1);
             objectPropIntersection.retainAll(objectPropSet2);
 
             numerator += 2d*objectPropIntersection.size();
@@ -164,7 +155,7 @@ public class MatchingService {
             // Data property intersection
             HashSet<DataPropertyManager> dataPropSet1 = manager1.getDataProperties();
             HashSet<DataPropertyManager> dataPropSet2 = manager2.getDataProperties();
-            dataPropIntersection = (HashSet<DataPropertyManager>) dataPropSet1.clone();
+            dataPropIntersection = new HashSet<>(dataPropSet1);
             dataPropIntersection.retainAll(dataPropSet2);
 
             numerator += 2d*dataPropIntersection.size();
@@ -212,14 +203,14 @@ public class MatchingService {
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
             //if(entry.getValue().getScore() > 0.8d && entry.getValue().getScore() < 1) {
-            if(entry.getValue().score() > configReader.getFilterMinimumScore()) {
+            if(entry.getValue().score() > configReader.getFilterMaximumScoreToRemove()) {
                 output.append(entry.getValue()).append("\n");
                 counter++;
             }
         }
         output.append("\n");
 
-        output.append("Amount of matchings with value > ").append(configReader.getFilterMinimumScore()).append(": ").append(counter).append("\n\n");
+        output.append("Amount of matchings with value > ").append(configReader.getFilterMaximumScoreToRemove()).append(": ").append(counter).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
 
         return output.toString();

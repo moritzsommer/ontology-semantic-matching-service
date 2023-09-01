@@ -41,7 +41,7 @@ public class CorrectNumberOfAxiomsTest {
             inferred.addAll(i.getAxioms());
         }
 
-        HashSet<OWLAxiom> intersection = (HashSet<OWLAxiom>)input.clone();
+        HashSet<OWLAxiom> intersection = new HashSet<>(input);
         intersection.retainAll(inferred);
         Integer addedNumberOfAxioms = input.size() + inferred.size() - intersection.size();
         Integer actualNumberOfAxioms = reasoner.getOutputOntology().getAxioms().size();

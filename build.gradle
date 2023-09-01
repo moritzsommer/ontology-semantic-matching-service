@@ -1,9 +1,9 @@
 plugins {
-    id 'java'
+    id 'application'
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -31,6 +31,8 @@ test {
 }
 
 tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-Xlint:unchecked'
+    options.deprecation = true
     options.encoding = 'UTF-8'
 }
 
@@ -38,4 +40,8 @@ tasks.withType(Test).configureEach {
     testLogging {
         exceptionFormat = 'full'
     }
+}
+
+application {
+    mainClass = 'IatEquivalentDeepMatching'
 }
