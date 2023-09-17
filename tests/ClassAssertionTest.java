@@ -2,16 +2,15 @@ import utils.InferenceTypes;
 import utils.NoSuchIRIException;
 import matching.MatchingService;
 import matching.Reasoner;
-import upload.SimpleInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
+import java.io.File;
 import java.io.IOException;
 
 import static utils.InferenceTypes.*;
-import static upload.InputTypes.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ClassAssertionTest {
@@ -19,12 +18,8 @@ public class ClassAssertionTest {
 
     @BeforeEach
     public void setup() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        SimpleInput input = new SimpleInput(
-                TEST,
-                "people",
-                ".owl"
-        );
-        Reasoner r = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
+        File input = new File("testresources/people.owl");
+        Reasoner r = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
         matchingService = new MatchingService(r);
     }
 

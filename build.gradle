@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -16,12 +17,15 @@ dependencies {
 sourceSets {
     main {
         java.srcDirs = ['src', 'examples']
-        resources.srcDirs = ['src']
     }
     test {
         java.srcDirs = ['tests']
         resources.srcDirs = ['testresources']
     }
+}
+
+processResources {
+    from('config.properties')
 }
 
 test {
@@ -41,6 +45,24 @@ tasks.withType(Test).configureEach {
     }
 }
 
+//tasks.register('executeMainClass', JavaExec) {
+//    classpath = sourceSets.main.runtimeClasspath
+//    mainClass = 'IatUpload'
+//}
+
 application {
     mainClass = 'IatEquivalentDeepMatching'
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+    mergeServiceFiles()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
 }

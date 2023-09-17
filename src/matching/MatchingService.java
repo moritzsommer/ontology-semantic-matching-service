@@ -9,24 +9,23 @@ import datastructures.NamedIndividualManager;
 import datastructures.ObjectPropertyManager;
 import org.semanticweb.owlapi.model.*;
 
-import java.io.IOException;
 import java.util.*;
 
 public class MatchingService {
+    private final ConfigurationReader configReader;
     private final OWLOntology ontology;
     private final HashMap<String, NamedIndividualManager> individuals;
     private final HashMap<WrapperKey, MatchingScoreManager> matchingScores;
-    private final ConfigurationReader configReader;
 
     public HashMap<String, NamedIndividualManager> getIndividuals() {
         return individuals;
     }
 
-    public MatchingService(Reasoner reasoner) throws NoSuchIRIException, IOException {
+    public MatchingService(Reasoner reasoner) throws NoSuchIRIException {
+        this.configReader = reasoner.getConfigReader();
         ontology = reasoner.getOutputOntology();
         individuals = new HashMap<>();
         matchingScores = new HashMap<>();
-        configReader = new ConfigurationReader();
 
         storeNamedIndividuals();
         storeClasses();
@@ -128,7 +127,7 @@ public class MatchingService {
         HashSet<ObjectPropertyManager> objectPropIntersection = new HashSet<>();
         HashSet<DataPropertyManager> dataPropIntersection = new HashSet<>();
 
-        if(configReader.isMatchingClasses()) {
+        if(configReader.isClasses()) {
             // Class intersection
             HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
             HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
@@ -140,7 +139,7 @@ public class MatchingService {
             denominator += classSet1.size() + classSet2.size();
         }
 
-        if(configReader.isMatchingObjectProperties()) {
+        if(configReader.isObjectProperties()) {
             // Object property intersection
             HashSet<ObjectPropertyManager> objectPropSet1 = manager1.getObjectProperties();
             HashSet<ObjectPropertyManager> objectPropSet2 = manager2.getObjectProperties();
@@ -151,7 +150,7 @@ public class MatchingService {
             denominator += objectPropSet1.size() + objectPropSet2.size();
         }
 
-        if(configReader.isMatchingDataProperties()) {
+        if(configReader.isDataProperties()) {
             // Data property intersection
             HashSet<DataPropertyManager> dataPropSet1 = manager1.getDataProperties();
             HashSet<DataPropertyManager> dataPropSet2 = manager2.getDataProperties();
@@ -173,6 +172,12 @@ public class MatchingService {
         return  value;
     }
 
+    /**
+     * Calculate matching scores for all possible combinations of individuals in the ontology.
+     * This method iterates through all unique pairs of individuals and computes their matching scores.
+     *
+     * @throws NoSuchIRIException If an Individual does not have a valid IRI (Internationalized Resource Identifier).
+     */
     public void matchingScore() throws NoSuchIRIException {
         String[][] combinations = getAllCombinations(individuals.keySet());
         for (String[] pair : combinations) {
@@ -180,12 +185,20 @@ public class MatchingService {
         }
     }
 
+    /**
+     * Generates all possible combinations of pairs from a set of strings.
+     *
+     * @param inputSet A set of strings from which to create pairs.
+     * @return A 2D array containing all unique combinations of pairs.
+     */
     private static String[][] getAllCombinations(Set<String> inputSet) {
         List<String[]> combinations = new ArrayList<>();
         String[] inputArray = inputSet.toArray(new String[0]);
         int n = inputArray.length;
+        // Iterate through the array to create pairs
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
+                // Create a pair and add it to the combinations list
                 String[] pair = new String[2];
                 pair[0] = inputArray[i];
                 pair[1] = inputArray[j];
@@ -203,14 +216,14 @@ public class MatchingService {
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
             //if(entry.getValue().getScore() > 0.8d && entry.getValue().getScore() < 1) {
-            if(entry.getValue().score() > configReader.getFilterMaximumScoreToRemove()) {
+            if(entry.getValue().score() > configReader.getMaximumScoreToRemove()) {
                 output.append(entry.getValue()).append("\n");
                 counter++;
             }
         }
         output.append("\n");
 
-        output.append("Amount of matchings with value > ").append(configReader.getFilterMaximumScoreToRemove()).append(": ").append(counter).append("\n\n");
+        output.append("Amount of matchings with value > ").append(configReader.getMaximumScoreToRemove()).append(": ").append(counter).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
 
         return output.toString();
@@ -220,3 +233,5 @@ public class MatchingService {
 // ToDo Test for files that dont have file extension in their name
 // ToDo gradle build
 // ToDo test upload
+// ToDo clear all command for inputs and outputs
+// ToDo handle the Problem with outputs, HermiT has to give an output and we have to load the onology in our file -> Databasis, SQL lite

@@ -1,6 +1,5 @@
 import utils.InferenceTypes;
 import matching.Reasoner;
-import upload.SimpleInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -8,10 +7,10 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
+import java.io.File;
 import java.io.IOException;
 
 import static utils.InferenceTypes.*;
-import static upload.InputTypes.TEST;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContainsInferredAxiomsTest {
@@ -19,12 +18,8 @@ public class ContainsInferredAxiomsTest {
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        SimpleInput input = new SimpleInput(
-                TEST,
-                "deep_iat",
-                ".rdf"
-        );
-        reasoner = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
+        File input = new File("testresources/deep_iat.rdf");
+        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
     }
 
     @Test

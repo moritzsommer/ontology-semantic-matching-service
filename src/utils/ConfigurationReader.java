@@ -1,42 +1,54 @@
 package utils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigurationReader {
-    private final boolean matchingClasses;
-    private final boolean matchingObjectProperties;
-    private final boolean matchingDataProperties;
-    private final double filterMaximumScoreToRemove;
+    private final boolean classes;
+    private final boolean objectProperties;
+    private final boolean dataProperties;
+    private final double maximumScoreToRemove;
+    private final boolean generateInferredOntology;
+    private final boolean generateOutputOntology;
 
-    public boolean isMatchingClasses() {
-        return matchingClasses;
+    public boolean isClasses() {
+        return classes;
     }
 
-    public boolean isMatchingObjectProperties() {
-        return matchingObjectProperties;
+    public boolean isObjectProperties() {
+        return objectProperties;
     }
 
-    public boolean isMatchingDataProperties() {
-        return matchingDataProperties;
+    public boolean isDataProperties() {
+        return dataProperties;
     }
 
-    public double getFilterMaximumScoreToRemove() {
-        return filterMaximumScoreToRemove;
+    public double getMaximumScoreToRemove() {
+        return maximumScoreToRemove;
+    }
+
+    public boolean isGenerateInferredOntology() {
+        return generateInferredOntology;
+    }
+
+    public boolean isGenerateOutputOntology() {
+        return generateOutputOntology;
     }
 
     public ConfigurationReader() throws IOException {
         // ToDo add mode for showing symmetric difference of individuals
         // ToDo adjust String if certain values dont influence the matching Score
         Properties properties = new Properties();
-        FileInputStream configFile = new FileInputStream("config.properties");
+        InputStream configFile = getClass().getClassLoader().getResourceAsStream("config.properties");
         properties.load(configFile);
 
-       matchingClasses = Boolean.parseBoolean(properties.getProperty("matching.classes"));
-       matchingObjectProperties = Boolean.parseBoolean(properties.getProperty("matching.objectProperties"));
-       matchingDataProperties = Boolean.parseBoolean(properties.getProperty("matching.dataProperties"));
-       filterMaximumScoreToRemove = Double.parseDouble(properties.getProperty("filter.maximumScoreToRemove", "0"));
+       classes = Boolean.parseBoolean(properties.getProperty("matching.classes"));
+       objectProperties = Boolean.parseBoolean(properties.getProperty("matching.objectProperties"));
+       dataProperties = Boolean.parseBoolean(properties.getProperty("matching.dataProperties"));
+       maximumScoreToRemove = Double.parseDouble(properties.getProperty("filter.maximumScoreToRemove", "0"));
+       generateInferredOntology = Boolean.parseBoolean(properties.getProperty("output.generateInferredOntology"));
+       generateOutputOntology = Boolean.parseBoolean(properties.getProperty("output.generateOutputOntology"));
 
        configFile.close();
     }

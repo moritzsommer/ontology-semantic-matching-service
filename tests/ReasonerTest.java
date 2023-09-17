@@ -1,11 +1,11 @@
 import utils.InferenceTypes;
 import matching.Reasoner;
-import upload.SimpleInput;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,19 +15,14 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static utils.InferenceTypes.*;
-import static upload.InputTypes.TEST;
 
 public class ReasonerTest {
     private Reasoner reasoner;
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        SimpleInput input = new SimpleInput(
-                TEST,
-                "people",
-                ".owl"
-        );
-        reasoner = new Reasoner(input, new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION});
+        File input = new File("testresources/people.owl");
+        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
     }
 
     @Test
