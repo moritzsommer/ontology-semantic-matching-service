@@ -47,7 +47,7 @@ tasks.withType(Test).configureEach {
 
 //tasks.register('executeMainClass', JavaExec) {
 //    classpath = sourceSets.main.runtimeClasspath
-//    mainClass = 'IatUpload'
+//    mainClass = 'IatExample'
 //}
 
 application {

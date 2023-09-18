@@ -1,12 +1,9 @@
 package matching;
 
+import datastructures.*;
 import utils.ConfigurationReader;
 import utils.WrapperKey;
 import utils.NoSuchIRIException;
-import datastructures.DataPropertyManager;
-import datastructures.MatchingScoreManager;
-import datastructures.NamedIndividualManager;
-import datastructures.ObjectPropertyManager;
 import org.semanticweb.owlapi.model.*;
 
 import java.util.*;
@@ -114,7 +111,6 @@ public class MatchingService {
     }
 
     private MatchingScoreManager computeMatchingScore(String iri1, String iri2) throws NoSuchIRIException {
-        // ToDo adapt score itself, take size of intersections into account, at least inform about it
         NamedIndividualManager manager1 = individuals.get(iri1);
         if(manager1 == null) throw new NoSuchIRIException(iri1);
         NamedIndividualManager manager2 = individuals.get(iri2);
@@ -123,46 +119,91 @@ public class MatchingService {
         double numerator = 0d;
         double denominator = 0d;
         double score = 0d;
+
         HashSet<OWLClassExpression> classIntersection = new HashSet<>();
         HashSet<ObjectPropertyManager> objectPropIntersection = new HashSet<>();
         HashSet<DataPropertyManager> dataPropIntersection = new HashSet<>();
 
+        HashSet<OWLClassExpression> classDifference1 = new HashSet<>();
+        HashSet<OWLClassExpression> classDifference2 = new HashSet<>();
+        HashSet<ObjectPropertyManager> objectPropDifference1 = new HashSet<>();
+        HashSet<ObjectPropertyManager> objectPropDifference2 = new HashSet<>();
+        HashSet<DataPropertyManager> dataPropDifference1 = new HashSet<>();
+        HashSet<DataPropertyManager> dataPropDifference2 = new HashSet<>();
+
         if(configReader.isClasses()) {
-            // Class intersection
+            // Compute class intersection
             HashSet<OWLClassExpression> classSet1 = manager1.getClasses();
             HashSet<OWLClassExpression> classSet2 = manager2.getClasses();
             // New Set required to protect original set, retainAll deletes elements
             classIntersection = new HashSet<>(classSet1);
             classIntersection.retainAll(classSet2);
-
+            // Compute symmetric difference for classes, sorted by individual
+            if(configReader.isDiffClasses()) {
+                classDifference1 = new HashSet<>(classSet1);
+                classDifference1.removeAll(classSet2);
+                classDifference2 = new HashSet<>(classSet2);
+                classDifference2.removeAll(classSet1);
+            }
+            // Compute part of the matching score
             numerator += 2d*classIntersection.size();
             denominator += classSet1.size() + classSet2.size();
         }
 
         if(configReader.isObjectProperties()) {
-            // Object property intersection
+            // Compute object property intersection
             HashSet<ObjectPropertyManager> objectPropSet1 = manager1.getObjectProperties();
             HashSet<ObjectPropertyManager> objectPropSet2 = manager2.getObjectProperties();
             objectPropIntersection = new HashSet<>(objectPropSet1);
             objectPropIntersection.retainAll(objectPropSet2);
-
+            // Compute symmetric difference for object properties, sorted by individual
+            if(configReader.isDiffObjectProperties()) {
+                objectPropDifference1 = new HashSet<>(objectPropSet1);
+                objectPropDifference1.removeAll(objectPropSet2);
+                objectPropDifference2 = new HashSet<>(objectPropSet2);
+                objectPropDifference2.removeAll(objectPropSet1);
+            }
+            // Compute part of the matching score
             numerator += 2d*objectPropIntersection.size();
             denominator += objectPropSet1.size() + objectPropSet2.size();
         }
 
         if(configReader.isDataProperties()) {
-            // Data property intersection
+            // Compute data property intersection
             HashSet<DataPropertyManager> dataPropSet1 = manager1.getDataProperties();
             HashSet<DataPropertyManager> dataPropSet2 = manager2.getDataProperties();
             dataPropIntersection = new HashSet<>(dataPropSet1);
             dataPropIntersection.retainAll(dataPropSet2);
-
+            // Compute symmetric difference for object properties, sorted by individual
+            if(configReader.isDiffDataProperties()) {
+                dataPropDifference1 = new HashSet<>(dataPropSet1);
+                dataPropDifference1.removeAll(dataPropSet2);
+                dataPropDifference2 = new HashSet<>(dataPropSet2);
+                dataPropDifference2.removeAll(dataPropSet1);
+            }
+            // Compute part of the matching score
             numerator += 2d*dataPropIntersection.size();
             denominator += dataPropSet1.size() + dataPropSet2.size();
         }
 
+        // Compute overall matching score
         if(denominator > 0) score = numerator / denominator;
-        return new MatchingScoreManager(manager1.getIndividual(), manager2.getIndividual(), score, classIntersection, objectPropIntersection, dataPropIntersection);
+
+        return new MatchingScoreManager(
+                manager1.getIndividual(),
+                manager2.getIndividual(),
+                score,
+                classIntersection,
+                objectPropIntersection,
+                dataPropIntersection,
+                classDifference1,
+                classDifference2,
+                objectPropDifference1,
+                objectPropDifference2,
+                dataPropDifference1,
+                dataPropDifference2,
+                configReader
+        );
     }
 
     public MatchingScoreManager matchingScore(String iri1, String iri2) throws NoSuchIRIException {
@@ -215,13 +256,12 @@ public class MatchingService {
         output.append("All matching scores: ").append("\n\n");
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
-            //if(entry.getValue().getScore() > 0.8d && entry.getValue().getScore() < 1) {
             if(entry.getValue().score() > configReader.getMaximumScoreToRemove()) {
                 output.append(entry.getValue()).append("\n");
                 counter++;
             }
         }
-        output.append("\n");
+        if(counter != 0) output.append("\n");
 
         output.append("Amount of matchings with value > ").append(configReader.getMaximumScoreToRemove()).append(": ").append(counter).append("\n\n");
         output.append(new String(new char[200]).replace("\0", "-"));
@@ -230,8 +270,3 @@ public class MatchingService {
     }
 }
 // ToDo IatUpload, Example for thesis
-// ToDo Test for files that dont have file extension in their name
-// ToDo gradle build
-// ToDo test upload
-// ToDo clear all command for inputs and outputs
-// ToDo handle the Problem with outputs, HermiT has to give an output and we have to load the onology in our file -> Databasis, SQL lite

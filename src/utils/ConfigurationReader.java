@@ -9,6 +9,9 @@ public class ConfigurationReader {
     private final boolean objectProperties;
     private final boolean dataProperties;
     private final double maximumScoreToRemove;
+    private final boolean diffClasses;
+    private final boolean diffObjectProperties;
+    private final boolean diffDataProperties;
     private final boolean generateInferredOntology;
     private final boolean generateOutputOntology;
 
@@ -28,6 +31,18 @@ public class ConfigurationReader {
         return maximumScoreToRemove;
     }
 
+    public boolean isDiffClasses() {
+        return diffClasses;
+    }
+
+    public boolean isDiffObjectProperties() {
+        return diffObjectProperties;
+    }
+
+    public boolean isDiffDataProperties() {
+        return diffDataProperties;
+    }
+
     public boolean isGenerateInferredOntology() {
         return generateInferredOntology;
     }
@@ -37,8 +52,6 @@ public class ConfigurationReader {
     }
 
     public ConfigurationReader() throws IOException {
-        // ToDo add mode for showing symmetric difference of individuals
-        // ToDo adjust String if certain values dont influence the matching Score
         Properties properties = new Properties();
         InputStream configFile = getClass().getClassLoader().getResourceAsStream("config.properties");
         properties.load(configFile);
@@ -47,6 +60,9 @@ public class ConfigurationReader {
        objectProperties = Boolean.parseBoolean(properties.getProperty("matching.objectProperties"));
        dataProperties = Boolean.parseBoolean(properties.getProperty("matching.dataProperties"));
        maximumScoreToRemove = Double.parseDouble(properties.getProperty("filter.maximumScoreToRemove", "0"));
+       diffClasses = Boolean.parseBoolean(properties.getProperty("symmetricDifference.diffClasses"));
+       diffObjectProperties = Boolean.parseBoolean(properties.getProperty("symmetricDifference.diffObjectProperties"));
+       diffDataProperties = Boolean.parseBoolean(properties.getProperty("symmetricDifference.diffDataProperties"));
        generateInferredOntology = Boolean.parseBoolean(properties.getProperty("output.generateInferredOntology"));
        generateOutputOntology = Boolean.parseBoolean(properties.getProperty("output.generateOutputOntology"));
 
