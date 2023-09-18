@@ -7,8 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static utils.InferenceTypes.CLASSASSERTION;
 import static utils.InferenceTypes.PROPERTYASSERTION;
@@ -19,7 +20,7 @@ public class DataPropertyAssertionTest {
 
     @BeforeEach
     public void setup() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        File input = new File("testresources/people.owl");
+        InputStream input = new FileInputStream("testresources/people.owl");
         Reasoner r = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
         matchingService = new MatchingService(r);
     }

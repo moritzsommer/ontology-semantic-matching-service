@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +22,7 @@ public class ReasonerTest {
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        File input = new File("testresources/people.owl");
+        InputStream input = new FileInputStream("testresources/people.owl");
         reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
     }
 

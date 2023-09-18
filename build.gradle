@@ -35,23 +35,8 @@ test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-tasks.withType(Test).configureEach {
-    testLogging {
-        exceptionFormat = 'full'
-    }
-}
-
-//tasks.register('executeMainClass', JavaExec) {
-//    classpath = sourceSets.main.runtimeClasspath
-//    mainClass = 'IatExample'
-//}
-
 application {
-    mainClass = 'IatEquivalentDeepMatching'
+    mainClass = 'JavaGateway'
 }
 
 shadowJar {
@@ -65,4 +50,19 @@ jar {
     manifest {
         attributes 'Main-Class': application.mainClass
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+tasks.register('startGatewayServer', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'gateway.JavaGateway'
 }

@@ -6,17 +6,18 @@ import utils.InferenceTypes;
 import utils.NoSuchIRIException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static utils.InferenceTypes.CLASSASSERTION;
 import static utils.InferenceTypes.PROPERTYASSERTION;
 
 public class IatExample {
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        File input1 = new File("reasoner-input/people.owl");
-        File input2 = new File("reasoner-input/deep_iat.rdf");
+        InputStream input1 = new FileInputStream("reasoner-input/people.owl");
 
-        MatchingService m = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input1, input2));
+        MatchingService m = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input1));
         m.matchingScore();
         System.out.println(m);
     }

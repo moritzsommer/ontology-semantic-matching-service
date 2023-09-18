@@ -37,24 +37,42 @@ public class Reasoner {
         return configReader;
     }
 
-    public Reasoner(InferenceTypes[] inferenceTypes, File... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
+    public Reasoner(InferenceTypes[] inferenceTypes, InputStream... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
         configReader = new ConfigurationReader();
         inputOntologies = new ArrayList<>();
         inferredOntologies = new ArrayList<>();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         // Identical axioms from input Ontologies removed in output Ontology, but each input needs unique IRI in rdf:about
-        for (File i : input) {
+        for (InputStream i : input) {
             OWLOntology inputOntology = manager.loadOntologyFromOntologyDocument(i);;
             InferredOntologyGenerator generator = setupReasoner(inputOntology, inferenceTypes);
             inputOntologies.add(inputOntology);
-            inferredOntologies.add(computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI(), i.getName()));
+            inferredOntologies.add(computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI()));
         }
         if(!inputOntologies.isEmpty() && input.length > 0) {
-            outputOntology = computeOutputOntology(manager, inputOntologies.get(0).getOntologyID().getOntologyIRI(), input[0].getName());
+            outputOntology = computeOutputOntology(manager, inputOntologies.get(0).getOntologyID().getOntologyIRI());
         } else {
             // Cover edge case no input ontologies
-            outputOntology = computeOutputOntology(manager, IRI.create("empty"), "empty");
+            outputOntology = computeOutputOntology(manager, IRI.create("empty"));
         }
+    }
+
+    public Reasoner(InferenceTypes[] inferenceTypes, String... input) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        this(inferenceTypes, convertStringToInputStream(input));
+    }
+
+    /**
+     * Converts an array of strings into an array of InputStreams.
+     *
+     * @param input An array of strings to be converted into InputStreams.
+     * @return An array of InputStreams containing the content of the input strings.
+     */
+    private static InputStream[] convertStringToInputStream(String[] input) {
+        HashSet<InputStream> res = new HashSet<>();
+        for (String i : input) {
+            res.add(new ByteArrayInputStream(i.getBytes()));
+        }
+        return res.toArray(new InputStream[0]);
     }
 
     private InferredOntologyGenerator setupReasoner(OWLOntology inputOntology, InferenceTypes[] inferenceTypes) {
@@ -81,13 +99,13 @@ public class Reasoner {
         return generators;
     }
 
-    private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri, String fileName) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-inferred");
         OWLOntology inferredOntology = manager.createOntology(newIri);
         reasoner.fillOntology(manager, inferredOntology);
 
         if(configReader.isGenerateInferredOntology()) {
-            String outputPath = "reasoner-output/inferred-" + fileName;
+            String outputPath = "reasoner-output/inferred";
             OutputStream outputStream = initialiseStream(outputPath);
             if(!manager.getOntologies().isEmpty()) {
                 manager.saveOntology(inferredOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
@@ -99,12 +117,12 @@ public class Reasoner {
         return inferredOntology;
     }
 
-    private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri, String fileName) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-result");
         OWLOntology outputOntology = manager.createOntology(newIri, manager.getOntologies());
 
         if(configReader.isGenerateOutputOntology()) {
-            String outputPath = "reasoner-output/result-" + fileName;
+            String outputPath = "reasoner-output/result";
             OutputStream outputStream = initialiseStream(outputPath);
             if(!manager.getOntologies().isEmpty()) {
                 manager.saveOntology(outputOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
