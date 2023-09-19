@@ -7,10 +7,6 @@ public record DataPropertyManager(OWLDataProperty property, OWLPropertyAssertion
 
     @Override
     public String toString() {
-        StringBuilder output = new StringBuilder();
-        output.append("DataProperty: ").append(property).append("\n");
-        output.append("AssertionObject: ").append(assertionObject);
-
-        return output.toString();
+        return "DataProperty: " + property + "\n" + "AssertionObject: " + assertionObject;
     }
 }

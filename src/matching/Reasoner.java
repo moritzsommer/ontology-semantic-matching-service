@@ -44,7 +44,7 @@ public class Reasoner {
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         // Identical axioms from input Ontologies removed in output Ontology, but each input needs unique IRI in rdf:about
         for (InputStream i : input) {
-            OWLOntology inputOntology = manager.loadOntologyFromOntologyDocument(i);;
+            OWLOntology inputOntology = manager.loadOntologyFromOntologyDocument(i);
             InferredOntologyGenerator generator = setupReasoner(inputOntology, inferenceTypes);
             inputOntologies.add(inputOntology);
             inferredOntologies.add(computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI()));
@@ -136,10 +136,10 @@ public class Reasoner {
 
     private FileOutputStream initialiseStream(String path) throws IOException {
         File resultingOntologyFile = new File(path);
-        if (!resultingOntologyFile.exists())
+        if (!resultingOntologyFile.exists()) {
             resultingOntologyFile.createNewFile();
+        }
         resultingOntologyFile = resultingOntologyFile.getAbsoluteFile();
-
         return new FileOutputStream(resultingOntologyFile);
     }
 

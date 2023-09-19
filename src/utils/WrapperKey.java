@@ -15,13 +15,10 @@ public record WrapperKey(String key1, String key2) {
     }
 
     public String toString() {
-        StringBuilder output = new StringBuilder(new String(new char[200]).replace("\0", "-")).append("\n\n");
-        output.append("Wrapper Key: ").append("\n\n");
-
-        output.append(key1).append("\n");
-        output.append(key2).append("\n\n");
-        output.append(new String(new char[150]).replace("\0", "-"));
-
-        return output.toString();
+        return new String(new char[200]).replace("\0", "-") + "\n\n" +
+                "Wrapper Key: " + "\n\n" +
+                key1 + "\n" +
+                key2 + "\n\n" +
+                new String(new char[150]).replace("\0", "-");
     }
 }

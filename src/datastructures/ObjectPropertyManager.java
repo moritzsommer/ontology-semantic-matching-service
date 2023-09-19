@@ -7,10 +7,6 @@ public record ObjectPropertyManager(OWLObjectProperty property, OWLPropertyAsser
 
     @Override
     public String toString() {
-        StringBuilder output = new StringBuilder();
-        output.append("ObjectProperty: ").append(property).append("\n");
-        output.append("AssertionObject: ").append(assertionObject);
-
-        return output.toString();
+        return "ObjectProperty: " + property + "\n" + "AssertionObject: " + assertionObject;
     }
 }

@@ -5,7 +5,6 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import utils.InferenceTypes;
 import utils.NoSuchIRIException;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
