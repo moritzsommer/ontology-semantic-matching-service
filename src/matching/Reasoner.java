@@ -1,5 +1,6 @@
 package matching;
 
+import org.semanticweb.HermiT.monitor.CountingMonitor;
 import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import utils.ConfigurationReader;
 import utils.InferenceTypes;
@@ -15,6 +16,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+
+/**
+ * The Reasoner class provides ontology reasoning by the HermiT OWL Reasoner.
+ */
 public class Reasoner {
     private final ConfigurationReader configReader;
     private final ArrayList<OWLOntology> inputOntologies;
@@ -37,19 +42,29 @@ public class Reasoner {
         return configReader;
     }
 
+    /**
+     * Initialises a Reasoner instance with the specified inference types and input ontologies.
+     *
+     * @param inferenceTypes An array of inference types to configure reasoning.
+     * @param input An array of input streams representing ontologies to be processed.
+     * @throws IOException If there is an issue with reading the input streams.
+     * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
+     * @throws OWLOntologyStorageException If there is an issue with storing an ontology internally.
+     */
     public Reasoner(InferenceTypes[] inferenceTypes, InputStream... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
         configReader = new ConfigurationReader();
         inputOntologies = new ArrayList<>();
         inferredOntologies = new ArrayList<>();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        // Identical axioms from input Ontologies removed in output Ontology, but each input needs unique IRI in rdf:about
         for (InputStream i : input) {
+            // Load the input ontologies
             OWLOntology inputOntology = manager.loadOntologyFromOntologyDocument(i);
             InferredOntologyGenerator generator = setupReasoner(inputOntology, inferenceTypes);
             inputOntologies.add(inputOntology);
             inferredOntologies.add(computeInferences(manager, generator, inputOntology.getOntologyID().getOntologyIRI()));
         }
         if(!inputOntologies.isEmpty() && input.length > 0) {
+            // Compute the output ontology with all inferences
             outputOntology = computeOutputOntology(manager, inputOntologies.get(0).getOntologyID().getOntologyIRI());
         } else {
             // Cover edge case no input ontologies
@@ -57,7 +72,16 @@ public class Reasoner {
         }
     }
 
-    public Reasoner(InferenceTypes[] inferenceTypes, String... input) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+    /**
+     * Initialises a Reasoner instance with the specified inference types and input ontology file paths.
+     *
+     * @param inferenceTypes An array of inference types to configure reasoning.
+     * @param input An array of input streams representing ontologies to be processed.
+     * @throws IOException If there is an issue with reading the input streams.
+     * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
+     * @throws OWLOntologyStorageException If there is an issue with storing an ontology internally.
+     */
+    public Reasoner(InferenceTypes[] inferenceTypes, String... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
         this(inferenceTypes, convertStringToInputStream(input));
     }
 
@@ -75,15 +99,30 @@ public class Reasoner {
         return res.toArray(new InputStream[0]);
     }
 
+    /**
+     * Sets up an ontology generator consisting of axiom generators for an input ontology.
+     *
+     * @param inputOntology The input ontology to reason over.
+     * @param inferenceTypes An array of inference types to configure reasoning.
+     * @return An InferredOntologyGenerator configured for reasoning.
+     */
     private InferredOntologyGenerator setupReasoner(OWLOntology inputOntology, InferenceTypes[] inferenceTypes) {
         org.semanticweb.HermiT.Reasoner.ReasonerFactory factory = new org.semanticweb.HermiT.Reasoner.ReasonerFactory();
         Configuration c = new Configuration();
         c.reasonerProgressMonitor = new ConsoleProgressMonitor();
+        c.tableauMonitorType = Configuration.TableauMonitorType.TIMING;
+        c.monitor = new CountingMonitor();
         OWLReasoner basicReasoner = factory.createReasoner(inputOntology, c);
         List<InferredAxiomGenerator<? extends OWLAxiom>> generators = defineInferenceGenerators(inferenceTypes);
         return new InferredOntologyGenerator(basicReasoner, generators);
     }
 
+    /**
+     * Sets up axiom generators for the specified inference types.
+     *
+     * @param inferenceTypes An array of inference types to configure axiom generators.
+     * @return A list of InferredAxiomGenerator instances for the specified inference types.
+     */
     private List<InferredAxiomGenerator<? extends OWLAxiom>> defineInferenceGenerators(InferenceTypes[] inferenceTypes) {
         List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<>();
         for (InferenceTypes i : inferenceTypes) {
@@ -99,13 +138,33 @@ public class Reasoner {
         return generators;
     }
 
+    /**
+     * Computes inferences for an input ontology, stores the inferred ontology in the OWLOntologyManager and returns it.
+     *
+     * @param manager An OWLOntologyManager to store ontologies.
+     * @param reasoner An InferredOntologyGenerator for performing reasoning. It already
+     *                 contains the input ontology.
+     * @param inputIri The IRI for the inferred ontology.
+     * @return The inferred ontology.
+     * @throws OWLOntologyCreationException If there is an issue with creating the inferred ontology.
+     * @throws IOException If the inferred ontology cannot be stored in a file.
+     * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
+     */
     private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-inferred");
+        // Inferred ontology is stored in the OWLOntologyManager
         OWLOntology inferredOntology = manager.createOntology(newIri);
         reasoner.fillOntology(manager, inferredOntology);
 
+        // If configured in the properties, additionally store the inferred ontology in a file
         if(configReader.isGenerateInferredOntology()) {
-            String outputPath = "reasoner-output/inferred";
+            String[] iriParts = inferredOntology.getOntologyID().getOntologyIRI().toString().split("/");
+            String outputPath = "reasoner-output/";
+            if(iriParts.length > 0) {
+                outputPath += iriParts[iriParts.length - 1];
+            } else {
+                outputPath += "inferred";
+            }
             OutputStream outputStream = initialiseStream(outputPath);
             if(!manager.getOntologies().isEmpty()) {
                 manager.saveOntology(inferredOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
@@ -114,13 +173,27 @@ public class Reasoner {
             }
         }
 
+        // Not only store the inferred ontology in the OWLOntologyManager, but also return it
         return inferredOntology;
     }
 
+    /**
+     * Combines all ontologies stored in the OWLOntologyManager, stores the output ontology in the OWLOntologyManager
+     * and returns it.
+     *
+     * @param manager An OWLOntologyManager to store ontologies
+     * @param inputIri The IRI for the output ontology.
+     * @return The output ontology.
+     * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
+     * @throws IOException If the output ontology cannot be stored in a file.
+     * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
+     */
     private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
         IRI newIri = IRI.create(inputIri.toString() + "-result");
+        // Output Ontology is stored in the OWLOntologyManager
         OWLOntology outputOntology = manager.createOntology(newIri, manager.getOntologies());
 
+        // If configured in the properties, additionally store the output ontology in a file
         if(configReader.isGenerateOutputOntology()) {
             String outputPath = "reasoner-output/result";
             OutputStream outputStream = initialiseStream(outputPath);
@@ -131,9 +204,17 @@ public class Reasoner {
             }
         }
 
+        // Not only store the output ontology in the OWLOntologyManager, but also return it
         return outputOntology;
     }
 
+    /**
+     * Initialises and returns a FileOutputStream for a specified file path.
+     *
+     * @param path The file path where the output stream will be created.
+     * @return A FileOutputStream for the specified file path.
+     * @throws IOException If there is an issue with creating the FileOutputStream.
+     */
     private FileOutputStream initialiseStream(String path) throws IOException {
         File resultingOntologyFile = new File(path);
         if (!resultingOntologyFile.exists()) {
@@ -143,6 +224,11 @@ public class Reasoner {
         return new FileOutputStream(resultingOntologyFile);
     }
 
+    /**
+     * Returns the total number of axioms in all input ontologies.
+     *
+     * @return The total number of axioms in the input ontologies.
+     */
     public int numberOfInputAxioms() {
         int res = 0;
         for (OWLOntology i : inputOntologies) {
@@ -151,6 +237,11 @@ public class Reasoner {
         return res;
     }
 
+    /**
+     * Returns the total number of axioms in all inferred ontologies.
+     *
+     * @return The total number of axioms in the inferred ontologies.
+     */
     public int numberOfInferredAxioms() {
         int res = 0;
         for (OWLOntology i : inferredOntologies) {
@@ -159,6 +250,11 @@ public class Reasoner {
         return res;
     }
 
+    /**
+     * Returns the total number of axioms in the output ontology.
+     *
+     * @return The total number of axioms in the output ontology.
+     */
     public int numberOfOutputAxioms() {
         return outputOntology.getAxiomCount();
     }
@@ -221,4 +317,3 @@ public class Reasoner {
         return output.toString();
     }
 }
-// Zu Ende, Datenstrukturen mit Subklasse, Oberklasse definieren, Vergleich zusammensetzen, zweite Ontologie hinzufügen

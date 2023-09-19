@@ -29,9 +29,9 @@ public class MatchingService {
     }
 
     /**
-     * Initialise a MatchingService using a provided Reasoner.
+     * Initialise a MatchingService using a provided reasoner.
      *
-     * @param reasoner The Reasoner instance containing the inferred result ontology and configuration information.
+     * @param reasoner The reasoner instance containing the inferred result ontology and configuration information.
      * @throws NoSuchIRIException If there are missing IRIs for certain individuals in the ontology.
      */
     public MatchingService(Reasoner reasoner) throws NoSuchIRIException {

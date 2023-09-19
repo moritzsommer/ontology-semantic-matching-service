@@ -36,7 +36,7 @@ test {
 }
 
 application {
-    mainClass = 'JavaGateway'
+    mainClass = 'gateway.JavaGateway'
 }
 
 shadowJar {
