@@ -12,9 +12,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.util.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -151,26 +149,38 @@ public class Reasoner {
      * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
      */
     private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        IRI newIri = IRI.create(inputIri.toString() + "-inferred");
+        String newIriBasis = Objects.requireNonNullElse(inputIri, "ontology") + "-inferred";
+        String newIri = "1-" + newIriBasis;
+
+        String[] iriParts = newIriBasis.split("/");
+        String outputPathBasis = iriParts[iriParts.length - 1] + ".owl";
+        String outputPath = "1-" + outputPathBasis;
+
+        // Compute the IRI of the inferred Ontology, avoid duplicates
+        if(configReader.isGenerateOutputOntology()) {
+            File checkFile = new File(outputPath);
+            for (int i = 2; manager.contains(IRI.create(newIri)) || checkFile.exists(); i++) {
+                newIri = i + "-" + newIriBasis;
+                outputPath = i + "-" + outputPathBasis;
+                checkFile = new File(outputPath);
+            }
+        } else {
+            for (int i = 2; manager.contains(IRI.create(newIri)); i++) {
+                newIri = i + "-" + newIriBasis;
+            }
+        }
+
         // Inferred ontology is stored in the OWLOntologyManager
-        OWLOntology inferredOntology = manager.createOntology(newIri);
+        OWLOntology inferredOntology = manager.createOntology(IRI.create(newIri));
         reasoner.fillOntology(manager, inferredOntology);
 
-        // If configured in the properties, additionally store the inferred ontology in a file
-        if(configReader.isGenerateInferredOntology()) {
-            String[] iriParts = inferredOntology.getOntologyID().getOntologyIRI().toString().split("/");
-            String outputPath = "reasoner-output/";
-            if(iriParts.length > 0) {
-                outputPath += iriParts[iriParts.length - 1];
-            } else {
-                outputPath += "inferred";
+        // If predetermined by the configuration, write inferred ontology in file
+        if(configReader.isGenerateOutputOntology()) {
+            OWLOntologyFormat format = new RDFXMLOntologyFormat();
+            if(inputIri != null) {
+                format = manager.getOntologyFormat(manager.getOntology(inputIri));
             }
-            OutputStream outputStream = initialiseStream(outputPath);
-            if(!manager.getOntologies().isEmpty()) {
-                manager.saveOntology(inferredOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
-            } else {
-                manager.saveOntology(inferredOntology, new RDFXMLOntologyFormat(), outputStream);
-            }
+            manager.saveOntology(inferredOntology, format, initialiseStream(outputPath));
         }
 
         // Not only store the inferred ontology in the OWLOntologyManager, but also return it
@@ -189,19 +199,37 @@ public class Reasoner {
      * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
      */
     private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        IRI newIri = IRI.create(inputIri.toString() + "-result");
-        // Output Ontology is stored in the OWLOntologyManager
-        OWLOntology outputOntology = manager.createOntology(newIri, manager.getOntologies());
+        String newIriBasis = Objects.requireNonNullElse(inputIri, "ontology") + "-result";
+        String newIri = "1-" + newIriBasis;
 
-        // If configured in the properties, additionally store the output ontology in a file
+        String[] iriParts = newIriBasis.split("/");
+        String outputPathBasis = iriParts[iriParts.length - 1] + ".owl";
+        String outputPath = "1-" + outputPathBasis;
+
+        // Compute the IRI of the output Ontology, avoid duplicates
         if(configReader.isGenerateOutputOntology()) {
-            String outputPath = "reasoner-output/result";
-            OutputStream outputStream = initialiseStream(outputPath);
-            if(!manager.getOntologies().isEmpty()) {
-                manager.saveOntology(outputOntology, manager.getOntologyFormat(manager.getOntology(inputIri)), outputStream);
-            } else {
-                manager.saveOntology(outputOntology, new RDFXMLOntologyFormat(), outputStream);
+            File checkFile = new File(outputPath);
+            for (int i = 2; manager.contains(IRI.create(newIri)) || checkFile.exists(); i++) {
+                newIri = i + "-" + newIriBasis;
+                outputPath = i + "-" + outputPathBasis;
+                checkFile = new File(outputPath);
             }
+        } else {
+            for (int i = 2; manager.contains(IRI.create(newIri)); i++) {
+                newIri = i + "-" + newIriBasis;
+            }
+        }
+
+        // Output ontology is stored in the OWLOntologyManager
+        OWLOntology outputOntology = manager.createOntology(IRI.create(newIri), manager.getOntologies());
+
+        // If predetermined by the configuration, write output ontology in file
+        if(configReader.isGenerateOutputOntology()) {
+            OWLOntologyFormat format = new RDFXMLOntologyFormat();
+            if(inputIri != null) {
+                format = manager.getOntologyFormat(manager.getOntology(inputIri));
+            }
+            manager.saveOntology(outputOntology, format, initialiseStream(outputPath));
         }
 
         // Not only store the output ontology in the OWLOntologyManager, but also return it

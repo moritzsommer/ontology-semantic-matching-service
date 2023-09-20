@@ -7,21 +7,27 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation files('lib/HermiT.jar')
-    implementation files('lib/py4j-0.10.9.7.jar')
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
 sourceSets {
     main {
-        java.srcDirs = ['src', 'examples']
+        java.srcDirs = ['src']
     }
     test {
         java.srcDirs = ['tests']
         resources.srcDirs = ['testresources']
     }
+    example {
+        java.srcDirs = ['examples']
+        resources.srcDirs = ['reasoner-input']
+    }
+}
+
+dependencies {
+    implementation files('lib/HermiT.jar')
+    implementation files('lib/py4j-0.10.9.7.jar')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    exampleImplementation files('lib/HermiT.jar')
+    exampleImplementation sourceSets.main.output
 }
 
 processResources {
@@ -39,17 +45,17 @@ application {
     mainClass = 'gateway.JavaGateway'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+}
+
 shadowJar {
     manifest {
         attributes 'Main-Class': application.mainClass
     }
     mergeServiceFiles()
-}
-
-jar {
-    manifest {
-        attributes 'Main-Class': application.mainClass
-    }
 }
 
 tasks.withType(JavaCompile).configureEach {

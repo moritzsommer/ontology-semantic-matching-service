@@ -14,11 +14,14 @@ import static utils.InferenceTypes.PROPERTYASSERTION;
 
 public class IatExample {
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        InputStream input1 = new FileInputStream("reasoner-input/people.owl");
-        InputStream input2 = new FileInputStream("reasoner-input/iat.rdf");
+        InputStream input = new FileInputStream("reasoner-input/empty.rdf");
 
-        MatchingService m = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input1, input2 ));
+        MatchingService m = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input, input));
         m.matchingScore();
         System.out.println(m);
+
+        MatchingService m2 = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input, input));
+        m.matchingScore();
+        System.out.println(m2);
     }
 }
