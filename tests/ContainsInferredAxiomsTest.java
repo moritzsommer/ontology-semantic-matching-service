@@ -1,3 +1,4 @@
+import utils.ConfigurationReader;
 import utils.InferenceTypes;
 import matching.Reasoner;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,8 +20,8 @@ public class ContainsInferredAxiomsTest {
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        InputStream input = new FileInputStream("testresources/deep_iat.rdf");
-        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
+        InputStream input = new FileInputStream("test-resources/deep_iat.rdf");
+        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, new ConfigurationReader("test-config.properties"), input);
     }
 
     @Test

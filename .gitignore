@@ -1,9 +1,5 @@
 .idea/
 out/
-reasoner-output/
-reasoner-input/
-!reasoner-output/.gitkeep
-!reasoner-input/.gitkeep
 *.iml
 .gradle/
 build/

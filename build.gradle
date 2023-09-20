@@ -13,7 +13,7 @@ sourceSets {
     }
     test {
         java.srcDirs = ['tests']
-        resources.srcDirs = ['testresources']
+        resources.srcDirs = ['test-resources']
     }
     example {
         java.srcDirs = ['examples']

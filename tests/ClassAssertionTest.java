@@ -1,3 +1,4 @@
+import utils.ConfigurationReader;
 import utils.InferenceTypes;
 import utils.NoSuchIRIException;
 import matching.MatchingService;
@@ -19,8 +20,8 @@ public class ClassAssertionTest {
 
     @BeforeEach
     public void setup() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        InputStream input = new FileInputStream("testresources/people.owl");
-        Reasoner r = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
+        InputStream input = new FileInputStream("test-resources/people.owl");
+        Reasoner r = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, new ConfigurationReader("test-config.properties"), input);
         matchingService = new MatchingService(r);
     }
 

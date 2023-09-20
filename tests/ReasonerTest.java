@@ -1,3 +1,4 @@
+import utils.ConfigurationReader;
 import utils.InferenceTypes;
 import matching.Reasoner;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,8 +23,8 @@ public class ReasonerTest {
 
     @BeforeEach
     public void setUp() throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        InputStream input = new FileInputStream("testresources/people.owl");
-        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input);
+        InputStream input = new FileInputStream("test-resources/people.owl");
+        reasoner = new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, new ConfigurationReader("test-config.properties"), input);
     }
 
     @Test
@@ -37,7 +38,7 @@ public class ReasonerTest {
         size = reasoner.numberOfOutputAxioms();
         assertEquals(212, size);
 
-        assertTrue(compareStrings(readStringFromFile("testresources/people_axioms.txt"), reasoner.toString()));
+        assertTrue(compareStrings(readStringFromFile("test-resources/people_axioms.txt"), reasoner.toString()));
     }
 
     private static String readStringFromFile(String filePath) throws IOException {

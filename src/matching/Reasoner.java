@@ -41,20 +41,24 @@ public class Reasoner {
     }
 
     /**
-     * Initialises a Reasoner instance with the specified inference types and input ontologies.
+     * Initialises a Reasoner instance with the specified configuration reader, inference types and input ontologies.
      *
      * @param inferenceTypes An array of inference types to configure reasoning.
-     * @param input An array of input streams representing ontologies to be processed.
+     * @param configReader A ConfigurationReader to configure matching.
+     * @param input Any number of input streams representing ontologies to be processed.
      * @throws IOException If there is an issue with reading the input streams.
      * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
      * @throws OWLOntologyStorageException If there is an issue with storing an ontology internally.
      */
-    public Reasoner(InferenceTypes[] inferenceTypes, InputStream... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
-        configReader = new ConfigurationReader();
+    public Reasoner(InferenceTypes[] inferenceTypes, ConfigurationReader configReader, InputStream... input)
+            throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
+        this.configReader = configReader;
         inputOntologies = new ArrayList<>();
         inferredOntologies = new ArrayList<>();
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-        for (InputStream i : input) {
+        // Remove duplicates from input vararg
+        Set<InputStream> uniqueInput = new HashSet<>(Arrays.asList(input));
+        for (InputStream i : uniqueInput) {
             // Load the input ontologies
             OWLOntology inputOntology = manager.loadOntologyFromOntologyDocument(i);
             InferredOntologyGenerator generator = setupReasoner(inputOntology, inferenceTypes);
@@ -71,10 +75,23 @@ public class Reasoner {
     }
 
     /**
-     * Initialises a Reasoner instance with the specified inference types and input ontology file paths.
+     * Initialises a Reasoner instance with the specified inference types and input ontologies.
      *
      * @param inferenceTypes An array of inference types to configure reasoning.
-     * @param input An array of input streams representing ontologies to be processed.
+     * @param input Any number of input streams representing ontologies to be processed.
+     * @throws IOException If there is an issue with reading the input streams.
+     * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
+     * @throws OWLOntologyStorageException If there is an issue with storing an ontology internally.
+     */
+    public Reasoner(InferenceTypes[] inferenceTypes, InputStream... input) throws IOException, OWLOntologyCreationException, OWLOntologyStorageException {
+        this(inferenceTypes, new ConfigurationReader(), input);
+    }
+
+    /**
+     * Initialises a Reasoner instance with the specified inference types and input ontologies.
+     *
+     * @param inferenceTypes An array of inference types to configure reasoning.
+     * @param input Any number of input Strings representing ontologies to be processed.
      * @throws IOException If there is an issue with reading the input streams.
      * @throws OWLOntologyCreationException If there is an issue with creating the output ontology.
      * @throws OWLOntologyStorageException If there is an issue with storing an ontology internally.
@@ -140,51 +157,19 @@ public class Reasoner {
      * Computes inferences for an input ontology, stores the inferred ontology in the OWLOntologyManager and returns it.
      *
      * @param manager An OWLOntologyManager to store ontologies.
-     * @param reasoner An InferredOntologyGenerator for performing reasoning. It already
-     *                 contains the input ontology.
+     * @param reasoner An InferredOntologyGenerator for performing reasoning. It already contains the input ontology.
      * @param inputIri The IRI for the inferred ontology.
      * @return The inferred ontology.
      * @throws OWLOntologyCreationException If there is an issue with creating the inferred ontology.
      * @throws IOException If the inferred ontology cannot be stored in a file.
      * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
      */
-    private OWLOntology computeInferences(OWLOntologyManager manager, InferredOntologyGenerator reasoner, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        String newIriBasis = Objects.requireNonNullElse(inputIri, "ontology") + "-inferred";
-        String newIri = "1-" + newIriBasis;
-
-        String[] iriParts = newIriBasis.split("/");
-        String outputPathBasis = iriParts[iriParts.length - 1] + ".owl";
-        String outputPath = "1-" + outputPathBasis;
-
-        // Compute the IRI of the inferred Ontology, avoid duplicates
-        if(configReader.isGenerateOutputOntology()) {
-            File checkFile = new File(outputPath);
-            for (int i = 2; manager.contains(IRI.create(newIri)) || checkFile.exists(); i++) {
-                newIri = i + "-" + newIriBasis;
-                outputPath = i + "-" + outputPathBasis;
-                checkFile = new File(outputPath);
-            }
-        } else {
-            for (int i = 2; manager.contains(IRI.create(newIri)); i++) {
-                newIri = i + "-" + newIriBasis;
-            }
-        }
-
-        // Inferred ontology is stored in the OWLOntologyManager
-        OWLOntology inferredOntology = manager.createOntology(IRI.create(newIri));
-        reasoner.fillOntology(manager, inferredOntology);
-
-        // If predetermined by the configuration, write inferred ontology in file
-        if(configReader.isGenerateOutputOntology()) {
-            OWLOntologyFormat format = new RDFXMLOntologyFormat();
-            if(inputIri != null) {
-                format = manager.getOntologyFormat(manager.getOntology(inputIri));
-            }
-            manager.saveOntology(inferredOntology, format, initialiseStream(outputPath));
-        }
-
-        // Not only store the inferred ontology in the OWLOntologyManager, but also return it
-        return inferredOntology;
+    private OWLOntology computeInferences(
+            OWLOntologyManager manager,
+            InferredOntologyGenerator reasoner,
+            IRI inputIri)
+            throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        return computeOntology(manager, inputIri, reasoner);
     }
 
     /**
@@ -198,42 +183,75 @@ public class Reasoner {
      * @throws IOException If the output ontology cannot be stored in a file.
      * @throws OWLOntologyStorageException If there is an issue with storing the inferred ontology internally.
      */
-    private OWLOntology computeOutputOntology(OWLOntologyManager manager, IRI inputIri) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
-        String newIriBasis = Objects.requireNonNullElse(inputIri, "ontology") + "-result";
-        String newIri = "1-" + newIriBasis;
+    private OWLOntology computeOutputOntology(
+            OWLOntologyManager manager,
+            IRI inputIri)
+            throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        return computeOntology(manager, inputIri, null);
+    }
+
+    /**
+     * Computes an inferred or an output ontology, stores it in the OWLOntologyManager, and returns it.
+     *
+     * @param manager An OWLOntologyManager to store ontologies.
+     * @param inputIri The IRI for the ontology.
+     * @param reasoner An InferredOntologyGenerator for performing reasoning. It can be null if not needed.
+     * @return The computed ontology.
+     * @throws OWLOntologyCreationException If there is an issue with creating the ontology.
+     * @throws IOException If the ontology cannot be stored in a file.
+     * @throws OWLOntologyStorageException If there is an issue with storing the ontology internally.
+     */
+    private OWLOntology computeOntology(
+            OWLOntologyManager manager,
+            IRI inputIri,
+            InferredOntologyGenerator reasoner)
+            throws OWLOntologyCreationException, IOException, OWLOntologyStorageException {
+        String ontologySuffix;
+        if(reasoner != null) {
+            ontologySuffix = "-inferred";
+        } else {
+            ontologySuffix = "-result";
+        }
+
+        String newIriBasis = Objects.requireNonNullElse(inputIri, "ontology") + ontologySuffix;
+        String newIri = newIriBasis;
 
         String[] iriParts = newIriBasis.split("/");
-        String outputPathBasis = iriParts[iriParts.length - 1] + ".owl";
-        String outputPath = "1-" + outputPathBasis;
+        String outputPathBasis = iriParts[iriParts.length - 1];
+        String outputPath = outputPathBasis + ".owl";
 
-        // Compute the IRI of the output Ontology, avoid duplicates
-        if(configReader.isGenerateOutputOntology()) {
+        // Compute the IRI of the ontology, avoid duplicates
+        if (configReader.isGenerateOutputOntology()) {
             File checkFile = new File(outputPath);
             for (int i = 2; manager.contains(IRI.create(newIri)) || checkFile.exists(); i++) {
-                newIri = i + "-" + newIriBasis;
-                outputPath = i + "-" + outputPathBasis;
+                newIri = newIriBasis + "-" + i;
+                outputPath = outputPathBasis  + "-" + i  + ".owl";
                 checkFile = new File(outputPath);
             }
         } else {
             for (int i = 2; manager.contains(IRI.create(newIri)); i++) {
-                newIri = i + "-" + newIriBasis;
+                newIri = newIriBasis + "-" + i;
             }
         }
 
-        // Output ontology is stored in the OWLOntologyManager
-        OWLOntology outputOntology = manager.createOntology(IRI.create(newIri), manager.getOntologies());
+        // Create the ontology and store it in the OWLOntologyManager
+        OWLOntology ontology;
+        if (reasoner != null) {
+            ontology = manager.createOntology(IRI.create(newIri));
+            reasoner.fillOntology(manager, ontology);
+        } else {
+            ontology = manager.createOntology(IRI.create(newIri), manager.getOntologies());
+        }
 
-        // If predetermined by the configuration, write output ontology in file
-        if(configReader.isGenerateOutputOntology()) {
+        if (configReader.isGenerateOutputOntology()) {
             OWLOntologyFormat format = new RDFXMLOntologyFormat();
-            if(inputIri != null) {
+            if (inputIri != null) {
                 format = manager.getOntologyFormat(manager.getOntology(inputIri));
             }
-            manager.saveOntology(outputOntology, format, initialiseStream(outputPath));
+            manager.saveOntology(ontology, format, initialiseStream(outputPath));
         }
 
-        // Not only store the output ontology in the OWLOntologyManager, but also return it
-        return outputOntology;
+        return ontology;
     }
 
     /**
