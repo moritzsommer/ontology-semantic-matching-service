@@ -314,7 +314,7 @@ public class MatchingService {
     public String toString() {
         int counter = 0;
         StringBuilder output = new StringBuilder(new String(new char[200]).replace("\0", "-")).append("\n\n");
-        output.append("All matching scores: ").append("\n\n");
+        output.append("All matching scores:").append("\n\n");
 
         for (HashMap.Entry<WrapperKey, MatchingScoreManager> entry : matchingScores.entrySet()) {
             if (entry.getValue().score() > configReader.getMaximumScoreToRemove()) {
