@@ -11,7 +11,7 @@ import java.util.*;
 /**
  * The MatchingService class provides a semantic matching service for ontology individuals.
  * It allows users to calculate matching scores between individuals based on their classes,
- * object properties, and data properties within the ontology.
+ * object properties and data properties within the ontology.
  * This service is designed to work with ontologies processed by the HermiT OWL Reasoner, and it stores
  * information about individuals and their properties for matching purposes.
  *
