@@ -9,7 +9,7 @@ import org.semanticweb.owlapi.model.*;
 import java.util.*;
 
 /**
- * The MatchingService class provides a semantic matching service for ontology individuals.
+ * The MatchingAlgorithm class provides a semantic matching service for ontology individuals.
  * It allows users to calculate matching scores between individuals based on their classes,
  * object properties and data properties within the ontology.
  * This service is designed to work with ontologies processed by the HermiT OWL Reasoner, and it stores
@@ -18,7 +18,7 @@ import java.util.*;
  * @author Moritz Sommer
  * @version 1.0
  */
-public class MatchingService {
+public class MatchingAlgorithm {
     private final ConfigurationReader configReader;
     private final OWLOntology ontology;
     private final HashMap<String, NamedIndividualManager> individuals;
@@ -29,12 +29,12 @@ public class MatchingService {
     }
 
     /**
-     * Initialise a MatchingService using a provided reasoner.
+     * Initialise a MatchingAlgorithm using a provided reasoner.
      *
      * @param reasoner The reasoner instance containing the inferred result ontology and configuration information.
      * @throws NoSuchIRIException If there are missing IRIs for certain individuals in the ontology.
      */
-    public MatchingService(Reasoner reasoner) throws NoSuchIRIException {
+    public MatchingAlgorithm(Reasoner reasoner) throws NoSuchIRIException {
         this.configReader = reasoner.getConfigReader();
         ontology = reasoner.getOutputOntology();
         individuals = new HashMap<>();

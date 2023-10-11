@@ -1,4 +1,4 @@
-import matching.MatchingService;
+import matching.MatchingAlgorithm;
 import matching.Reasoner;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -14,9 +14,9 @@ import static utils.InferenceTypes.PROPERTYASSERTION;
 
 public class IatExample {
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        InputStream input = new FileInputStream("reasoner-input/people.owl");
+        InputStream input = new FileInputStream("reasoner-input/3.rdf");
 
-        MatchingService m = new MatchingService(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input));
+        MatchingAlgorithm m = new MatchingAlgorithm(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input));
         m.matchingScore();
         System.out.println(m);
     }
