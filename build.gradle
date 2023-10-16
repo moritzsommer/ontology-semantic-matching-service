@@ -17,7 +17,7 @@ sourceSets {
     }
     example {
         java.srcDirs = ['examples']
-        resources.srcDirs = ['reasoner-input']
+        resources.srcDirs = ['example-resources']
     }
 }
 
