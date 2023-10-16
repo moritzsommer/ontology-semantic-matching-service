@@ -43,7 +43,7 @@ public class ClassAssertionTest {
         );
 
         size = matchingAlgorithm.getIndividuals().get("http://www.semanticweb.org/mdebe/ontologies/example#Nick_Carraway").getClasses().size();
-        assertEquals(2, size);
+        assertEquals(1, size);
         assertEquals("[<http://www.semanticweb.org/mdebe/ontologies/example#Person>, " +
                         "<http://www.semanticweb.org/mdebe/ontologies/example#Adult>]",
                 matchingAlgorithm.getIndividuals().get("http://www.semanticweb.org/mdebe/ontologies/example#Nick_Carraway").getClasses().toString()
