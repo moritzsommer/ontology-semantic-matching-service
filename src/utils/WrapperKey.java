@@ -1,17 +1,28 @@
 package utils;
 
+import java.util.HashSet;
+
 public record WrapperKey(String key1, String key2) {
 
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof WrapperKey key)) return false;
         if (this == object) return true;
-        return key1.equals(key.key1()) && key2.equals(key.key2());
+        HashSet<String> keySet1 = new HashSet<>();
+        HashSet<String> keySet2 = new HashSet<>();
+        keySet1.add(key1);
+        keySet1.add(key2);
+        keySet2.add(key.key1);
+        keySet2.add(key.key2);
+        return (keySet1.equals(keySet2));
     }
 
     @Override
     public int hashCode() {
-        return (key1 + key2).hashCode();
+        HashSet<String> keySet1 = new HashSet<>();
+        keySet1.add(key1);
+        keySet1.add(key2);
+        return keySet1.hashCode();
     }
 
     public String toString() {

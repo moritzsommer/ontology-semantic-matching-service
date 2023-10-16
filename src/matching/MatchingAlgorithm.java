@@ -270,8 +270,13 @@ public class MatchingAlgorithm {
      */
     public MatchingScoreManager matchingScore(String iri1, String iri2) throws NoSuchIRIException {
         WrapperKey key = new WrapperKey(iri1, iri2);
-        MatchingScoreManager value = computeMatchingScore(iri1, iri2);
-        matchingScores.put(key, value);
+        MatchingScoreManager value;
+        if(matchingScores.containsKey(key)) {
+            value = matchingScores.get(key);
+        } else {
+            value = computeMatchingScore(iri1, iri2);
+            matchingScores.put(key, value);
+        }
         return value;
     }
 
@@ -330,6 +335,3 @@ public class MatchingAlgorithm {
         return output.toString();
     }
 }
-// ToDo IatUpload, Example for thesis
-// ToDo write comments
-// ToDo split some long methods if time, better readable code

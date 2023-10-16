@@ -14,9 +14,10 @@ import static utils.InferenceTypes.PROPERTYASSERTION;
 
 public class IatExample {
     public static void main(String[] args) throws OWLOntologyCreationException, IOException, OWLOntologyStorageException, NoSuchIRIException {
-        InputStream input = new FileInputStream("reasoner-input/3.rdf");
+        InputStream input = new FileInputStream("reasoner-input/pump_station.rdf");
+        InputStream input2 = new FileInputStream("reasoner-input/control_system.rdf");
 
-        MatchingAlgorithm m = new MatchingAlgorithm(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input));
+        MatchingAlgorithm m = new MatchingAlgorithm(new Reasoner(new InferenceTypes[]{CLASSASSERTION, PROPERTYASSERTION}, input, input2));
         m.matchingScore();
         System.out.println(m);
     }
